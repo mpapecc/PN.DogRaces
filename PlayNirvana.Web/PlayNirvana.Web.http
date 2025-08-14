@@ -1,0 +1,6 @@
+@PlayNirvana.Web_HostAddress = http://localhost:5030
+
+GET {{PlayNirvana.Web_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
