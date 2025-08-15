@@ -1,23 +1,25 @@
 using System.Text;
 using System.Text.Json;
+using MassTransit;
 using PlayNirvana.Bll.DataContext.Repositories.Implementation;
 using PlayNirvana.Bll.Services;
 using PlayNirvana.Scheduler.BackgroundServices.Abstraction;
+using PlayNirvana.Shared.Contracts;
 using RabbitMQ.Client;
 
 namespace PlayNirvana.Scheduler.BackgroundServices.Implementation
 {
     public class RoundManager : BackgroundServiceBase
     {
-        private readonly ILogger<RoundManager> logger;
+        private readonly IBus publish;
         private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly int betLockBeforeStart = 2;
         private readonly int raceDuration = 5;
 
-        public RoundManager(ILogger<RoundManager> logger,
+        public RoundManager(IBus publish,
             IServiceScopeFactory serviceScopeFactory)
         {
-            this.logger = logger;
+            this.publish = publish;
             this.serviceScopeFactory = serviceScopeFactory;
         }
 
@@ -31,7 +33,6 @@ namespace PlayNirvana.Scheduler.BackgroundServices.Implementation
         {
             using IServiceScope scope = serviceScopeFactory.CreateScope();
             var roundService = scope.ServiceProvider.GetRequiredService<RoundService>();
-            var channel = scope.ServiceProvider.GetRequiredService<IChannel>();
 
             //lock race for 2 seconds to calculate winner
             var roundIds = roundService.LockNextActiveRoundForBets();
@@ -43,13 +44,9 @@ namespace PlayNirvana.Scheduler.BackgroundServices.Implementation
             roundService.GenerateRoundOutcome(roundIds);
 
             //Notify beting service outcome is generated and process all bets
-            await channel.BasicPublishAsync(
-                          exchange: string.Empty,
-                          routingKey: "bets-processor",
-                          mandatory: true,
-                          basicProperties: new BasicProperties { Persistent = true },
-                          body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(roundIds))
-                          );
+
+            var roundForProcess = new RoundsForProcess(roundIds);
+            await publish.Publish(roundForProcess, ct);
 
             await Task.Delay(TimeSpan.FromSeconds(this.betLockBeforeStart));
 
@@ -60,6 +57,9 @@ namespace PlayNirvana.Scheduler.BackgroundServices.Implementation
 
             //finish race
             roundService.FinishInProgressRound();
+
+            var roundsFinished = new RoundsFinished(roundIds);
+            await publish.Publish(roundsFinished, ct);
         }
     }
 }

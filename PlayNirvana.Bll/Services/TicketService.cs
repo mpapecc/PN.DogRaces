@@ -25,7 +25,7 @@ namespace PlayNirvana.Bll.Services
             this.ticketRepository = ticketRepository;
         }
 
-        public void ValidateAndCreateTicket(CreatTicketModel creatTicketModel)
+        public void ValidateAndCreateTicket(CreateTicketModel creatTicketModel)
         {
             var ticket = creatTicketModel.ToTicket();
 
@@ -52,7 +52,7 @@ namespace PlayNirvana.Bll.Services
             this.ticketRepository.Insert(ticket);
             this.ticketRepository.Commit();
         }
-    
+
         public void UpdateSuccessTicketsToWon()
         {
             this.ticketRepository.Query()

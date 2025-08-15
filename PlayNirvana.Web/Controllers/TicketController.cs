@@ -16,7 +16,7 @@ namespace PlayNirvana.Web.Controllers
         }
 
         [HttpPost]
-        public void CreateTicket(CreatTicketModel creatTicketModel)
+        public void CreateTicket(CreateTicketModel creatTicketModel)
         {
             this.ticketService.ValidateAndCreateTicket(creatTicketModel);
         }

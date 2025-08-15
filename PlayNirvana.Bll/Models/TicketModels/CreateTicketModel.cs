@@ -3,7 +3,7 @@ using PlayNirvana.Shared.Enums;
 
 namespace PlayNirvana.Bll.Models.TicketModels
 {
-    public class CreatTicketModel
+    public class CreateTicketModel
     {
         public double BetAmount { get; set; } 
         public IEnumerable<BetModel> Bets { get; set; }

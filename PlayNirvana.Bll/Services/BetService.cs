@@ -56,7 +56,7 @@ namespace PlayNirvana.Bll.Services
                     }
                 }
 
-                //process all pending tickets THIS CAN BE MOVED TO TICKET SERVICE ???
+                //process all sucess tickets THIS CAN BE MOVED TO TICKET SERVICE ???
 
                 //update pending tickets where all bets have won
                 this.ticketService.UpdateSuccessTicketsToWon();

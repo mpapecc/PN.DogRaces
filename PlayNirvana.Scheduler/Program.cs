@@ -1,6 +1,6 @@
+using MassTransit;
 using PlayNirvana.Bll.IoC;
 using PlayNirvana.Scheduler.BackgroundServices.Implementation;
-using RabbitMQ.Client;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<RoundsGenerator>();
@@ -10,22 +10,21 @@ builder.Logging
     .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
 builder.Services.RegisterBllModule();
 
-ConnectionFactory factory = new();
-factory.HostName = "localhost";
-factory.ClientProvidedName = "PlayNirvana.Scheduler";
+builder.Services.AddMassTransit(x =>
+{
+    // No consumers here; this app only publishes
+    x.SetKebabCaseEndpointNameFormatter();
 
-IConnection connection = await factory.CreateConnectionAsync();
-IChannel channel = await connection.CreateChannelAsync();
-
-await channel.QueueDeclareAsync(
-    queue: "bets-processor",
-    durable: true,
-    exclusive: false,
-    autoDelete: false,
-    arguments: null
-    );
-
-builder.Services.AddSingleton(channel);
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+        // no ConfigureEndpoints() needed (no receive endpoints)
+    });
+});
 
 var host = builder.Build();
 host.Run();
