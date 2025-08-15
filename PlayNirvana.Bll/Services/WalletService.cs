@@ -5,10 +5,10 @@ namespace PlayNirvana.Bll.Services
 {
     public class WalletService
     {
-        private int credits = 100;
+        private double credits = 100;
         private IList<CreditReservation> creditReservations = new List<CreditReservation>();
         
-        public void ReserveAmonunt(int ticketId, int amount)
+        public void ReserveAmonunt(int ticketId, double amount)
         {
             if(amount <= 0)
                 throw new WalletOperationException("Amount must be greater then 0");
@@ -20,6 +20,17 @@ namespace PlayNirvana.Bll.Services
             creditReservations.Add(new CreditReservation(ticketId, amount));
         }
 
+        public void RemoveReservation(double ticketId)
+        {
+            var reservation = this.creditReservations.FirstOrDefault(x => x.TicketId == ticketId);
+
+            if (reservation == null)
+                throw new WalletOperationException($"There is not reservation for ticket with id {ticketId}");
+
+            this.credits += reservation.Amount;
+            this.creditReservations.Remove(reservation);
+        }
+
         public void AddCredits(int amount)
         {
             if (amount <= 0)
@@ -28,7 +39,7 @@ namespace PlayNirvana.Bll.Services
             this.credits += amount;
         }
 
-        public void ProcessReservation(int ticketId, TicketStatus ticketStatus)
+        public void ProcessReservation(double ticketId, TicketStatus ticketStatus)
         {
             var reservation = this.creditReservations.FirstOrDefault(x => x.TicketId == ticketId);
 
@@ -50,5 +61,5 @@ namespace PlayNirvana.Bll.Services
         }
     }
 
-    public record class CreditReservation(int TicketId, int Amount);
+    public record class CreditReservation(int TicketId, double Amount);
 }

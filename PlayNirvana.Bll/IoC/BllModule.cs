@@ -23,6 +23,7 @@ namespace PlayNirvana.Bll.IoC
             services.AddScoped<RoundService>();
             services.AddScoped<TicketService>();
             services.AddScoped<BetService>();
+            services.AddSingleton<WalletService>();
 
             services.AddValidators(typeof(BllModule).Assembly);
 
