@@ -9,6 +9,7 @@ builder.Services.RegisterBllModule();
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<RoundsForProcessConsumer>();
+    x.AddConsumer<CreateTicketConsumer>();
 
     x.SetKebabCaseEndpointNameFormatter();
 

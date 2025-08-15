@@ -14,15 +14,18 @@ namespace PlayNirvana.Bll.Services
         private readonly Validator<Ticket> ticketValidator;
         private readonly TicketRoundsValidator ticketRoundsValidator;
         private readonly IRepository<Ticket> ticketRepository;
+        private readonly WalletService walletService;
 
         public TicketService(
             Validator<Ticket> betValidators,
             TicketRoundsValidator ticketRoundsValidator,
-            IRepository<Ticket> ticketRepository)
+            IRepository<Ticket> ticketRepository,
+            WalletService walletService)
         {
             this.ticketValidator = betValidators;
             this.ticketRoundsValidator = ticketRoundsValidator;
             this.ticketRepository = ticketRepository;
+            this.walletService = walletService;
         }
 
         public void ValidateAndCreateTicket(CreateTicketModel creatTicketModel)
@@ -39,11 +42,14 @@ namespace PlayNirvana.Bll.Services
 
             //make reservation in wallet
 
+            this.walletService.ReserveAmonunt(creatTicketModel.TicketId, creatTicketModel.BetAmount);
+
             var ticketRoundsValidatorResult = this.ticketRoundsValidator.Validate(ticket);
 
             if (!ticketRoundsValidatorResult.IsSucess)
             {
                 //cancle reservation in wallet
+                this.walletService.RemoveReservation(creatTicketModel.TicketId);
 
                 throw new TicketValidationException(ticketRoundsValidatorResult.Message);
             }
@@ -53,17 +59,30 @@ namespace PlayNirvana.Bll.Services
             this.ticketRepository.Commit();
         }
 
+        //FOR THIS METHODS WE SHOULD CHECK IF BETS ARE SYSTEMATIC E.G. 2 OUT OF 3 FOR WINNING
+
         public void UpdateSuccessTicketsToWon()
         {
-            this.ticketRepository.Query()
-                    .Where(x => x.TicketStatus == TicketStatus.Success && x.Bets.All(x => x.BetStatus == BetStatus.Won))
+            var wonTicketsQuery = this.ticketRepository.Query()
+                    .Where(x => x.TicketStatus == TicketStatus.Success && x.Bets.All(x => x.BetStatus == BetStatus.Won));
+
+            //handle wallet actions
+
+            this.walletService.ProcessReservation(12, TicketStatus.Success);
+
+            wonTicketsQuery
                     .ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Won));
         }
 
         public void UpdateSuccessTicketsToLost()
         {
-            this.ticketRepository.Query()
-                    .Where(x => x.TicketStatus == TicketStatus.Success && x.Bets.Any(x => x.BetStatus == BetStatus.Lost))
+            var lostTicketsQuery = this.ticketRepository.Query()
+                    .Where(x => x.TicketStatus == TicketStatus.Success && x.Bets.Any(x => x.BetStatus == BetStatus.Lost));
+
+            //handle wallet actions
+            this.walletService.ProcessReservation(12, TicketStatus.Lost);
+
+            lostTicketsQuery
                     .ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Lost));
         }
     }

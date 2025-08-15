@@ -15,7 +15,6 @@ namespace PlayNirvana.BetsService.Consumers
 
         public Task Consume(ConsumeContext<RoundsForProcess> context)
         {
-            var msg = context.Message;
             this.betService.ProcessRoundBets(context.Message.roundIds);
             return Task.CompletedTask;
         }

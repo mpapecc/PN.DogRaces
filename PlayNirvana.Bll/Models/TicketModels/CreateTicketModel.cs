@@ -5,6 +5,7 @@ namespace PlayNirvana.Bll.Models.TicketModels
 {
     public class CreateTicketModel
     {
+        public int TicketId { get; set; }
         public double BetAmount { get; set; } 
         public IEnumerable<BetModel> Bets { get; set; }
 

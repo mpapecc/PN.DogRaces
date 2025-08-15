@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MassTransit;
+using Microsoft.AspNetCore.Mvc;
 using PlayNirvana.Bll.Models.TicketModels;
-using PlayNirvana.Bll.Services;
 
 namespace PlayNirvana.Web.Controllers
 {
@@ -8,17 +8,17 @@ namespace PlayNirvana.Web.Controllers
     [ApiController]
     public class TicketController : Controller
     {
-        private readonly TicketService ticketService;
+        private readonly IPublishEndpoint publish;
 
-        public TicketController(TicketService ticketService)
+        public TicketController(IPublishEndpoint publish)
         {
-            this.ticketService = ticketService;
+            this.publish = publish;
         }
 
         [HttpPost]
-        public void CreateTicket(CreateTicketModel creatTicketModel)
+        public Task CreateTicket(CreateTicketModel creatTicketModel)
         {
-            this.ticketService.ValidateAndCreateTicket(creatTicketModel);
+            return this.publish.Publish(creatTicketModel);
         }
     }
 }
