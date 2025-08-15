@@ -15,8 +15,9 @@ namespace PlayNirvana.Bll.Validators.TicketValidators
         public ValidationResult Validate(Ticket ticket)
         {
             var ticketRounds = ticket.Bets.Select(x => x.RoundId).ToList();
+            var allRoundsActive = roundRepository.ActiveRoundQuery().Select(x => x.Id).ToList();
 
-            var areAllRoundsActive = roundRepository.ActiveRoundQuery().Any(x => ticketRounds.Contains(x.Id));
+            var areAllRoundsActive = !ticketRounds.Any(x => !allRoundsActive.Contains(x));
 
             if (!areAllRoundsActive)
                 return ValidationResult.Failed("Can not place bet on round that is not active for betting");
