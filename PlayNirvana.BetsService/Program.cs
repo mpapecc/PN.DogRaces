@@ -4,8 +4,8 @@ using PlayNirvana.BetsService.Consumers;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.RegisterBllModule();
-//builder.Logging
-//    .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
+builder.Logging
+    .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<RoundsForProcessConsumer>();

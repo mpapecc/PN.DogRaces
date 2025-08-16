@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PlayNirvana.Bll.DataContext.Repositories.Abstraction;
 using PlayNirvana.Domain.Entites;
+using PlayNirvana.Shared.Contracts;
 using PlayNirvana.Shared.Enums;
 
 namespace PlayNirvana.Bll.Services
@@ -22,39 +23,21 @@ namespace PlayNirvana.Bll.Services
             this.ticketService = ticketService;
         }
 
-        public void ProcessRoundBets(IEnumerable<int> roundIds)
+        public void ProcessRoundBets(RoundsForProcess roundsForProcess)
         {
-            foreach (var id in roundIds)
+            foreach (var roundOutcome in roundsForProcess.RoundOutcomes)
             {
-                var orderdDogsForRound = this.raceDogResultRepository.Query()
-                                                    .Where(x => x.RoundId == id)
-                                                    .OrderBy(x => x.Place)
-                                                    .ToList();
-
-                PrintDogsOrder(orderdDogsForRound);
-
                 var roundBets = this.betsRepository.Query()
-                    .Where(x => x.RoundId == id)
-                    .Include(x => x.DogPositions)
-                    .ToList();
+                    .Where(x => x.RoundId == roundOutcome.RoundId)
+                    .Include(x => x.DogPositions);
 
                 //process all bets
                 foreach (var bet in roundBets)
                 {
-                    if(bet.BetType == BetType.Position)
-                    {
-                        bet.BetStatus = BetStatus.Won;
-
-                        foreach (var dogPosition in bet.DogPositions)
-                        {
-                            if (orderdDogsForRound[dogPosition.Position].RacingDogId != dogPosition.RacingDogId)
-                            {
-                                bet.BetStatus = BetStatus.Lost;
-                                break;
-                            }
-                        }
-                    }
+                    ProcessBet(bet, roundOutcome);
                 }
+
+                this.betsRepository.Commit();
 
                 //process all sucess tickets THIS CAN BE MOVED TO TICKET SERVICE ???
 
@@ -63,7 +46,23 @@ namespace PlayNirvana.Bll.Services
 
                 //update pending tickets where any bet has lost
                 this.ticketService.UpdateSuccessTicketsToLost();
+            }
+        }
 
+        private void ProcessBet(Bet bet, RoundOutcome roundOutcome)
+        {
+            if (bet.BetType == BetType.Position)
+            {
+                bet.BetStatus = BetStatus.Won;
+
+                foreach (var dogPosition in bet.DogPositions)
+                {
+                    if (roundOutcome.RaceDogResults.ElementAt(dogPosition.Position).RacingDogId != dogPosition.RacingDogId)
+                    {
+                        bet.BetStatus = BetStatus.Lost;
+                        break;
+                    }
+                }
             }
         }
 

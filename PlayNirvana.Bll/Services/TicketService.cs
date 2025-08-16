@@ -68,7 +68,7 @@ namespace PlayNirvana.Bll.Services
 
             //handle wallet actions
 
-            this.walletService.ProcessReservation(12, TicketStatus.Success);
+            //this.walletService.ProcessReservation(12, TicketStatus.Success);
 
             wonTicketsQuery
                     .ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Won));
@@ -80,7 +80,7 @@ namespace PlayNirvana.Bll.Services
                     .Where(x => x.TicketStatus == TicketStatus.Success && x.Bets.Any(x => x.BetStatus == BetStatus.Lost));
 
             //handle wallet actions
-            this.walletService.ProcessReservation(12, TicketStatus.Lost);
+            //this.walletService.ProcessReservation(12, TicketStatus.Lost);
 
             lostTicketsQuery
                     .ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Lost));

@@ -1,14 +1,14 @@
 ﻿using NCrontab;
 using static NCrontab.CrontabSchedule;
 
-namespace PlayNirvana.Scheduler.BackgroundServices.Abstraction
+namespace PlayNirvana.Scheduler.BackgroundServices
 {
-    public abstract class BackgroundServiceBase : BackgroundService
+    public abstract class SchedulableBackgroundService : BackgroundService
     {
         private readonly CrontabSchedule _schedule;
         private DateTime _nextRun;
 
-        protected BackgroundServiceBase()
+        protected SchedulableBackgroundService()
         {
             var cronExpression = CronExpression();
             _schedule = Parse(cronExpression, new ParseOptions { IncludingSeconds = true });
@@ -17,18 +17,8 @@ namespace PlayNirvana.Scheduler.BackgroundServices.Abstraction
 
         public abstract string CronExpression();
 
-        // Optional setup hook
-        public virtual Task BeforeJobAsync(CancellationToken ct) => Task.CompletedTask;
-
         // Your job implementation
         public abstract Task JobAsync(CancellationToken ct);
-
-        public override async Task StartAsync(CancellationToken cancellationToken)
-        {
-            // Do not block here
-            await BeforeJobAsync(cancellationToken);
-            await base.StartAsync(cancellationToken);
-        }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
