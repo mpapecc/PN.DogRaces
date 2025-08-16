@@ -37,8 +37,6 @@ namespace PlayNirvana.Bll.Services
                 return Task.CompletedTask;
             }
 
-            // should add BeforeJob method to create rounds when Worker starts so that user
-            // doesnt have to wait for next execution for placing bet
             if (idleRoundsCount == 0)
             {
                 var nextRoundStartTime = CalculateNextRoundStart();
@@ -57,6 +55,12 @@ namespace PlayNirvana.Bll.Services
             return Task.CompletedTask;
         }
 
+        private IList<Round> GenerateRounds(DateTime referentDateTime, Func<IList<Round>, IList<Round>> processFunc)
+        {
+            var rounds = GenerateRounds(referentDateTime);
+            return processFunc(rounds);
+        }
+
         private IList<Round> GenerateRounds(DateTime referentDateTime)
         {
             var rounds = Enumerable.Range(0, newRoundsThreshold).Select(x => new Round()
@@ -66,12 +70,6 @@ namespace PlayNirvana.Bll.Services
             }).ToList();
 
             return rounds;
-        }
-
-        private IList<Round> GenerateRounds(DateTime referentDateTime, Func<IList<Round>, IList<Round>> processFunc)
-        {
-            var rounds = GenerateRounds(referentDateTime);
-            return processFunc(rounds);
         }
 
         private DateTime CalculateNextRoundStart()
@@ -96,12 +94,12 @@ namespace PlayNirvana.Bll.Services
                .ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Active));
         }
 
-        public IEnumerable<int> LockNextActiveRoundForBets(int roundsNumber = 1)
+        public IEnumerable<int> LockNextActiveRoundForBets()
         {
             // maybe we can check when placing bet if there is less then 5 seconds before start 
             // and prevent bet...in that way we are reducing database updates but we have to make sure we 
             // are validating in code in every place!!!
-            var nextRoundForActivationQuery = this.roundRepository.GetNextRoundForActivationQuery(roundsNumber);
+            var nextRoundForActivationQuery = this.roundRepository.GetNextRoundForActivationQuery();
 
             if (!nextRoundForActivationQuery.Any())
             {
@@ -135,7 +133,7 @@ namespace PlayNirvana.Bll.Services
             
             foreach (var roundId in roundIds)
             {
-                var roundOutcome = GenerateRandomLoop(GetRacingDogsList())
+                var roundOutcome = GenerateRandomDogoList()
                 .Select((x, i) => new RaceDogResult { RacingDogId = x.Id, Place = i + 1, RoundId = roundId }).ToList();
 
                 this.raceDogResultRepository.InsertRange(roundOutcome);
@@ -148,9 +146,11 @@ namespace PlayNirvana.Bll.Services
         }
 
         //move this generation into some service
-        private List<RacingDog> GetRacingDogsList()
+        private List<RacingDog> GenerateRandomDogoList()
         {
-            return new()
+            Random _rand = new Random();
+
+            var listToShuffle = new List<RacingDog>()
             {
                 new RacingDog{Id = 1, Name = "Dogo1", Number  = 1},
                 new RacingDog{Id = 2, Name = "Dogo2", Number  = 2},
@@ -162,11 +162,6 @@ namespace PlayNirvana.Bll.Services
                 new RacingDog{Id = 8, Name = "Dogo8", Number  = 8},
                 new RacingDog{Id = 9, Name = "Dogo9", Number  = 9},
             };
-        }
-
-        private List<RacingDog> GenerateRandomLoop(List<RacingDog> listToShuffle)
-        {
-            Random _rand = new Random();
 
             for (int i = listToShuffle.Count - 1; i > 0; i--)
             {

@@ -68,7 +68,7 @@ namespace PlayNirvana.Bll.Services
 
             //handle wallet actions
 
-            //this.walletService.ProcessReservation(12, TicketStatus.Success);
+            this.walletService.ProcessReservation(12, TicketStatus.Success);
 
             wonTicketsQuery
                     .ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Won));
@@ -84,6 +84,40 @@ namespace PlayNirvana.Bll.Services
 
             lostTicketsQuery
                     .ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Lost));
+        }
+
+        public IEnumerable<TicketModel> GetSuccessTickets()
+        {
+            return this.ticketRepository.Query()
+                .Where(x => x.TicketStatus == TicketStatus.Success)
+                .Select(x => new TicketModel()
+                {
+                    BetAmount = x.BetAmount,
+                    CreatedOn = x.CreatedOn,
+                    TicketStatus = x.TicketStatus,
+                    WinAmount = x.WinAmount
+                });
+        }
+
+        public TicketDetailsModel GetTicketDetails(int ticketId)
+        {
+            var ticketDetails = this.ticketRepository.Query()
+                .Where(x => x.Id == ticketId)
+                .Select(x => new TicketDetailsModel()
+                {
+                    BetAmount = x.BetAmount,
+                    CreatedOn = x.CreatedOn,
+                    TicketStatus = x.TicketStatus,
+                    WinAmount = x.WinAmount
+                })
+                .FirstOrDefault();
+            
+            if(ticketDetails == null)
+            {
+                throw new ArgumentException($"Ticket with Id {ticketId} does not exists.");
+            }
+
+            return ticketDetails;
         }
     }
 }

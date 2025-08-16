@@ -6,7 +6,7 @@ using PlayNirvana.Domain.Entites;
 
 namespace PlayNirvana.Web.Controllers
 {
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class TicketController : Controller
     {
@@ -15,7 +15,8 @@ namespace PlayNirvana.Web.Controllers
 
         public TicketController(
             IPublishEndpoint publish,
-            TicketService ticketService)
+            TicketService ticketService
+            )
         {
             this.publish = publish;
             this.ticketService = ticketService;
@@ -27,10 +28,18 @@ namespace PlayNirvana.Web.Controllers
             return this.publish.Publish(creatTicketModel);
         }
 
-        [HttpGet]
-        public IList<Ticket> GetTickets()
+        //method that will get tickets with pagination based on TicketStatus. if no argument is provided get without filtering
+
+        [HttpGet(nameof(GetSuccessTickets))]
+        public IEnumerable<TicketModel> GetSuccessTickets()
         {
-            return this.ticketService.GetTickets();
+            return this.ticketService.GetSuccessTickets();
+        }
+
+        [HttpGet(nameof(GetTickedDetails))]
+        public TicketDetailsModel GetTickedDetails(int ticketId)
+        {
+            return this.ticketService.GetTicketDetails(ticketId);
         }
     }
 }

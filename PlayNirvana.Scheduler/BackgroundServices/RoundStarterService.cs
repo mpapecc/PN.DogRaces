@@ -26,6 +26,7 @@ namespace PlayNirvana.Scheduler.BackgroundServices
 
         public override string CronExpression() => "*/8 * * * * *";
 
+        //WHAT IF THERE IS ERROR SOMEWHERE DOWN THE LINE??
         public override Task JobAsync(CancellationToken ct)
         {
             //WHY WE NEED CANCELLATIONTOKEN
@@ -33,9 +34,8 @@ namespace PlayNirvana.Scheduler.BackgroundServices
             var roundService = scope.ServiceProvider.GetRequiredService<RoundService>();
             var scheduler = scope.ServiceProvider.GetRequiredService<IMessageScheduler>();
 
+            logger.LogInformation($"Lock round {betLockBeforeStart} seconds before start => {DateTime.Now}");
             var roundIds = roundService.LockNextActiveRoundForBets(); // IS IT NEEDED ???
-
-            logger.LogInformation($"Lock rounds {betLockBeforeStart} seconds before start => {DateTime.Now}");
 
             roundService.ActivateNextNRounds();
 

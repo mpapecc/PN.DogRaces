@@ -27,9 +27,18 @@ namespace PlayNirvana.Bll.Services
         {
             foreach (var roundOutcome in roundsForProcess.RoundOutcomes)
             {
+
+                //in production scenarion here we could get 100 or even 1000 or more records
+                //it would be good to use async enumerator so that all records are not buffered into memory befor processing but rather processed as stream
                 var roundBets = this.betsRepository.Query()
                     .Where(x => x.RoundId == roundOutcome.RoundId)
-                    .Include(x => x.DogPositions);
+                    .Include(x => x.DogPositions)
+                    .ToList();
+
+                if (!roundBets.Any())
+                {
+                    break;
+                }
 
                 //process all bets
                 foreach (var bet in roundBets)
@@ -38,15 +47,11 @@ namespace PlayNirvana.Bll.Services
                 }
 
                 this.betsRepository.Commit();
-
-                //process all sucess tickets THIS CAN BE MOVED TO TICKET SERVICE ???
-
-                //update pending tickets where all bets have won
-                this.ticketService.UpdateSuccessTicketsToWon();
-
-                //update pending tickets where any bet has lost
-                this.ticketService.UpdateSuccessTicketsToLost();
             }
+
+            //process all sucess tickets THIS CAN BE MOVED TO TICKET SERVICE ???
+            this.ticketService.UpdateSuccessTicketsToWon();
+            this.ticketService.UpdateSuccessTicketsToLost();
         }
 
         private void ProcessBet(Bet bet, RoundOutcome roundOutcome)

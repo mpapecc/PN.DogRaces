@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PlayNirvana.Bll.Models;
 using PlayNirvana.Domain.Entites;
 using PlayNirvana.Shared.Enums;
 
@@ -8,6 +9,17 @@ namespace PlayNirvana.Bll.DataContext.Repositories.Implementation
     {
         public RoundRepository(PlayNirvanaDbContext context) : base(context)
         {
+        }
+
+        public IEnumerable<RoundModel> GetActiveRounds()
+        {
+            return ActiveRoundQuery()
+                .Select(x => new RoundModel()
+                {
+                    RoundStatus = x.RoundStatus,
+                    Start = x.Start
+                })
+                .ToList();
         }
 
         public int GetIdleRoundsCount()
@@ -30,37 +42,6 @@ namespace PlayNirvana.Bll.DataContext.Repositories.Implementation
                 .Take(roundsNumber);
         }
 
-        public void ActivateNextNRounds(int roundsNumber = 1)
-        {
-            GetNextNIdleRounds(roundsNumber)
-                .ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus , RoundStatus.Active));
-        }
-
-        public void LockNextActiveRoundForBets(int roundsNumber = 1)
-        {
-            // maybe we can check when placing bet if there is less then 5 seconds before start 
-            // and prevent bet...in that way we are reducing database updates but we have to make sure we 
-            // are validating in code in every place!!!
-            GetNextRoundForActivationQuery(roundsNumber)
-                .ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Locked));
-        }
-
-        public void StartLockedRound(int roundsNumber = 1)
-        {
-            LockedRoundQuery()
-                .OrderBy(x => x.Start)
-                .Take(roundsNumber)
-                .ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.InProgress));
-        }
-
-        public void FinishInProgressRound(int roundsNumber = 1)
-        {
-            InProgressRoundQuery()
-                .OrderBy(x => x.Start)
-                .Take(roundsNumber)
-                .ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Finished));
-        }
-
         public IQueryable<Round> IdleRoundQuery()
         {
             return base.Query().Where(x => x.RoundStatus == RoundStatus.Idle);
@@ -81,11 +62,11 @@ namespace PlayNirvana.Bll.DataContext.Repositories.Implementation
             return base.Query().Where(x => x.RoundStatus == RoundStatus.InProgress);
         }
 
-        public IQueryable<Round> GetNextRoundForActivationQuery(int roundsNumber)
+        public IQueryable<Round> GetNextRoundForActivationQuery()
         {
             return ActiveRoundQuery()
                 .OrderBy(x => x.Start)
-                .Take(roundsNumber);
+                .Take(1);
         }
     }
 }

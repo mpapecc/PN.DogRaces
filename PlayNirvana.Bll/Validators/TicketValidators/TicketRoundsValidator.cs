@@ -15,8 +15,9 @@ namespace PlayNirvana.Bll.Validators.TicketValidators
         public ValidationResult Validate(Ticket ticket)
         {
             var ticketRounds = ticket.Bets.Select(x => x.RoundId).ToList();
-            var allRoundsActive = roundRepository.ActiveRoundQuery().Select(x => x.Id).ToList();
 
+            var allRoundsActive = roundRepository.ActiveRoundQuery().Select(x => x.Id).ToList();
+            //this also handles case when round is locked and it is not present in active rounds list
             var areAllRoundsActive = !ticketRounds.Any(x => !allRoundsActive.Contains(x));
 
             if (!areAllRoundsActive)
