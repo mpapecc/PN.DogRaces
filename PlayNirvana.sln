@@ -5,21 +5,21 @@ VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.Web", "PlayNirvana.Web\PlayNirvana.Web.csproj", "{FD8AB9A9-A7B5-4795-A168-8259614A226C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.Scheduler", "PlayNirvana.Scheduler\PlayNirvana.Scheduler.csproj", "{9BD9AE89-5BDA-40F4-9324-1CA7CF0CA8B5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.Scheduler", "WorkerServices\PlayNirvana.Scheduler\PlayNirvana.Scheduler.csproj", "{9BD9AE89-5BDA-40F4-9324-1CA7CF0CA8B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.Domain", "PlayNirvana.Domain\PlayNirvana.Domain.csproj", "{6B547B02-95EC-4CC6-A8E7-46DFF961BEDC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.Domain", "Core\PlayNirvana.Domain\PlayNirvana.Domain.csproj", "{6B547B02-95EC-4CC6-A8E7-46DFF961BEDC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.Bll", "PlayNirvana.Bll\PlayNirvana.Bll.csproj", "{89C8D982-BEC9-4C3D-86E5-32DBAA5A59D9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.Bll", "Core\PlayNirvana.Bll\PlayNirvana.Bll.csproj", "{89C8D982-BEC9-4C3D-86E5-32DBAA5A59D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.Shared", "PlayNirvana.Shared\PlayNirvana.Shared.csproj", "{E7BA8053-D970-45D5-A85D-493D7BE7C75C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.Shared", "Core\PlayNirvana.Shared\PlayNirvana.Shared.csproj", "{E7BA8053-D970-45D5-A85D-493D7BE7C75C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.TicketsService", "PlayNirvana.TicketsService\PlayNirvana.TicketsService.csproj", "{8FABE6D6-73C0-43C4-8C48-08742ED6D97A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.TicketsService", "WorkerServices\PlayNirvana.TicketsService\PlayNirvana.TicketsService.csproj", "{8FABE6D6-73C0-43C4-8C48-08742ED6D97A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WorkerServices", "WorkerServices", "{67E3F582-993B-436D-B1B3-A17F58CEBA25}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{81F33AEE-F092-4A84-8F28-1735F168E31B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.Infrastructure", "PlayNirvana.Infrastructure\PlayNirvana.Infrastructure.csproj", "{EBE1C94F-1564-4AA1-9299-35D683A24877}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.Infrastructure", "Core\PlayNirvana.Infrastructure\PlayNirvana.Infrastructure.csproj", "{EBE1C94F-1564-4AA1-9299-35D683A24877}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
