@@ -8,7 +8,7 @@ builder.Logging
     .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
 builder.Services.AddMassTransit(x =>
 {
-    x.AddConsumer<RoundsForProcessConsumer>();
+    x.AddConsumer<ProcessRoundBetsConsumer>();
     x.AddConsumer<CreateTicketConsumer>();
 
     x.SetKebabCaseEndpointNameFormatter();

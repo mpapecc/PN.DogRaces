@@ -19,7 +19,7 @@ namespace PlayNirvana.Web.IoC
 
             services.AddMassTransit(x =>
             {
-                x.AddConsumer<RoundsFinishedConsumer>();
+                x.AddConsumer<RoundFinishedConsumer>();
 
                 x.SetKebabCaseEndpointNameFormatter();
 

@@ -8,18 +8,18 @@ using PlayNirvana.Web.GameHubs;
 
 namespace PlayNirvana.Web.Consumers
 {
-    public class RoundsFinishedConsumer : IConsumer<RoundsFinished>
+    public class RoundFinishedConsumer : IConsumer<RoundFinished>
     {
         private readonly IHubContext<GameHub, IGameHubClient> gameHubClient;
         private readonly IRepository<RaceDogResult> raceDogRepository;
         private readonly RoundService roundService;
-        private readonly ILogger<RoundsFinishedConsumer> logger;
+        private readonly ILogger<RoundFinishedConsumer> logger;
 
-        public RoundsFinishedConsumer(
+        public RoundFinishedConsumer(
             IHubContext<GameHub, IGameHubClient> gameHubClient,
             IRepository<RaceDogResult> raceDogRepository,
             RoundService roundService,
-            ILogger<RoundsFinishedConsumer> logger)
+            ILogger<RoundFinishedConsumer> logger)
         {
             this.gameHubClient = gameHubClient;
             this.raceDogRepository = raceDogRepository;
@@ -27,18 +27,13 @@ namespace PlayNirvana.Web.Consumers
             this.logger = logger;
         }
 
-        public Task Consume(ConsumeContext<RoundsFinished> context)
+        public Task Consume(ConsumeContext<RoundFinished> context)
         {
-            this.logger.LogInformation($"Consuming rounds finish event => {DateTime.Now}");
+            this.logger.LogInformation($"Consuming rounds finish event for round {context.Message.RoundId} => {DateTime.Now}");
             //finish race
-            this.roundService.FinishInProgressRound();
+            this.roundService.FinishRound(context.Message.RoundId);
 
-            var result = this.raceDogRepository.Query()
-                .Where(x => context.Message.roundIds.Contains(x.RoundId))
-                .GroupBy(x => x.RoundId)
-                .ToList();
-            
-            this.gameHubClient.Clients.All.SendRoundResult(result);
+            this.gameHubClient.Clients.All.SendRoundResult(context.Message.RaceDogResults);
 
             return Task.CompletedTask;
         }

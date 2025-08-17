@@ -11,7 +11,7 @@ namespace PlayNirvana.Bll.Services
     {
         private readonly RoundRepository roundRepository;
         private readonly IRepository<RaceDogResult> raceDogResultRepository;
-        private readonly int newRoundsThreshold = 10;
+        private readonly int newRoundsThreshold = 30;
         private readonly int roundDuration = 10;
         private readonly int minimunActiveRounds = 5;
 
@@ -21,7 +21,7 @@ namespace PlayNirvana.Bll.Services
             this.raceDogResultRepository = raceDogResultRepository;
         }
 
-        public Task GenerateRounds()
+        public Task GenerateRoundIfNeeded()
         {
             // betting time (7) + race (3) = 10 min
             // that means in a one day there can be 144 races
@@ -30,9 +30,9 @@ namespace PlayNirvana.Bll.Services
             // we will also check if ther are more then 200 iddle races in if so we will skipp generation
 
             var idleRoundsCount = roundRepository.GetIdleRoundsCount();
-            IEnumerable<Round> rounds;
+            var activeRoundsCount = roundRepository.GetActiveRoundsCount();
 
-            if (idleRoundsCount >= this.newRoundsThreshold)
+            if (idleRoundsCount >= this.newRoundsThreshold && activeRoundsCount > this.minimunActiveRounds)
             {
                 return Task.CompletedTask;
             }
@@ -41,27 +41,22 @@ namespace PlayNirvana.Bll.Services
             {
                 var nextRoundStartTime = CalculateNextRoundStart();
 
-                rounds = GenerateRounds(nextRoundStartTime, rounds => ActivateFirstNRounds(rounds, this.minimunActiveRounds));
+                GenerateRounds(nextRoundStartTime, rounds => ActivateFirstNRounds(rounds, this.minimunActiveRounds + 5));
             }
-            else
+            else if (idleRoundsCount > 0 && idleRoundsCount < this.newRoundsThreshold)
             {
-                var lastRoundStartTime = roundRepository.GetLastIdleRoundStartDate();
-                rounds = GenerateRounds(lastRoundStartTime);
+                var lastRoundStartTime = roundRepository.GetLastIdleRoundStart();
+                GenerateRounds(lastRoundStartTime);
             }
-
-            roundRepository.InsertRange(rounds);
-            roundRepository.Commit();
+            else if (activeRoundsCount <= this.minimunActiveRounds)
+            {
+                ActivateRounds(this.minimunActiveRounds + 5);
+            }
 
             return Task.CompletedTask;
         }
 
-        private IList<Round> GenerateRounds(DateTime referentDateTime, Func<IList<Round>, IList<Round>> processFunc)
-        {
-            var rounds = GenerateRounds(referentDateTime);
-            return processFunc(rounds);
-        }
-
-        private IList<Round> GenerateRounds(DateTime referentDateTime)
+        private void GenerateRounds(DateTime referentDateTime, Func<IList<Round>, IList<Round>>? processFunc = null)
         {
             var rounds = Enumerable.Range(0, newRoundsThreshold).Select(x => new Round()
             {
@@ -69,7 +64,11 @@ namespace PlayNirvana.Bll.Services
                 RoundStatus = RoundStatus.Idle,
             }).ToList();
 
-            return rounds;
+            if (processFunc != null)
+                rounds = (List<Round>)processFunc(rounds);
+
+            roundRepository.InsertRange(rounds);
+            roundRepository.Commit();
         }
 
         private DateTime CalculateNextRoundStart()
@@ -88,61 +87,62 @@ namespace PlayNirvana.Bll.Services
             return rounds;
         }
 
-        public void ActivateNextNRounds(int roundsNumber = 1)
+        public void ActivateRound(int roundId)
         {
-            this.roundRepository.GetNextNIdleRounds(roundsNumber)
-               .ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Active));
+            var updatesCount = this.roundRepository.IdleRoundQuery()
+                                .Where(x => x.Id == roundId)
+                                .ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Active));
         }
 
-        public IEnumerable<int> LockNextActiveRoundForBets()
+        private void ActivateRounds(int roundsCount)
         {
-            // maybe we can check when placing bet if there is less then 5 seconds before start 
-            // and prevent bet...in that way we are reducing database updates but we have to make sure we 
-            // are validating in code in every place!!!
-            var nextRoundForActivationQuery = this.roundRepository.GetNextRoundForActivationQuery();
+            var updatesCount = this.roundRepository.IdleRoundQuery()
+                                .OrderBy(x => x.Start)
+                                .Take(roundsCount)
+                                .ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Active));
+        }
 
-            if (!nextRoundForActivationQuery.Any())
+        public int LockNextActiveRoundForBets()
+        {
+            var nextRoundForLockId = this.roundRepository.GetNextRoundForActivationQuery().Select(x => x.Id).FirstOrDefault();
+
+            if (nextRoundForLockId == 0)
             {
-                return Enumerable.Empty<int>();
+                //should handle this more gracefully, althoug this should never happen since RoundsGenerator makes sure there are always active rounds
+                //maybe in this case manually call GenerateRounds()
+                throw new InvalidOperationException("There are no active rounds for locking");
             }
 
-            nextRoundForActivationQuery.ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Locked));
+            var updatedRows = this.roundRepository.GetNextRoundForActivationQuery().ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Locked));
 
-            return nextRoundForActivationQuery.Select(x => x.Id).ToList();
+            return nextRoundForLockId;
         }
 
-        public void StartLockedRound(int roundsNumber = 1)
+        public void StartLockedRound(int roundId)
         {
-            this.roundRepository.LockedRoundQuery()
-               .OrderBy(x => x.Start)
-               .Take(roundsNumber)
+            var updatesCount = this.roundRepository.LockedRoundQuery()
+               .Where(x => x.Id == roundId)
                .ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.InProgress));
         }
 
-        public void FinishInProgressRound(int roundsNumber = 1)
+        public void FinishRound(int roundId)
         {
-            this.roundRepository.InProgressRoundQuery()
-               .OrderBy(x => x.Start)
-               .Take(roundsNumber)
-               .ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Finished));
+            var updatesCount = this.roundRepository.Query()
+                .Where(x => x.Id == roundId)
+                .ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Finished));
         }
 
-        public IEnumerable<RoundOutcome> GenerateRoundOutcome(IEnumerable<int> roundIds)
+        public IEnumerable<RaceDogResultsRecord> GenerateRoundOutcome(int roundId)
         {
-            var outcomes = Enumerable.Empty<RoundOutcome>();
-            
-            foreach (var roundId in roundIds)
-            {
-                var roundOutcome = GenerateRandomDogoList()
+            var roundOutcome = GenerateRandomDogoList()
                 .Select((x, i) => new RaceDogResult { RacingDogId = x.Id, Place = i + 1, RoundId = roundId }).ToList();
 
-                this.raceDogResultRepository.InsertRange(roundOutcome);
+            this.raceDogResultRepository.InsertRange(roundOutcome);
 
-                outcomes.Append(new RoundOutcome(roundId, roundOutcome.Select(x => new RaceDogResultsRecord(x.RacingDogId, x.RoundId))));
-            }
 
             this.raceDogResultRepository.Commit();
-            return outcomes;
+
+            return roundOutcome.Select(x => new RaceDogResultsRecord(x.RacingDogId, x.RoundId));
         }
 
         //move this generation into some service

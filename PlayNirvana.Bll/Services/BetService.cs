@@ -23,38 +23,34 @@ namespace PlayNirvana.Bll.Services
             this.ticketService = ticketService;
         }
 
-        public void ProcessRoundBets(RoundsForProcess roundsForProcess)
+        public void ProcessRoundBets(ProcessRoundBets roundBetsProcessData)
         {
-            foreach (var roundOutcome in roundsForProcess.RoundOutcomes)
+            //in production scenarion here we could get 100 or even 1000 or more records
+            //it would be good to use async enumerator so that all records are not buffered into memory befor processing but rather processed as stream
+            var roundBets = this.betsRepository.Query()
+                .Where(x => x.RoundId == roundBetsProcessData.RoundId)
+                .Include(x => x.DogPositions)
+                .ToList();
+
+            if (!roundBets.Any())
             {
-
-                //in production scenarion here we could get 100 or even 1000 or more records
-                //it would be good to use async enumerator so that all records are not buffered into memory befor processing but rather processed as stream
-                var roundBets = this.betsRepository.Query()
-                    .Where(x => x.RoundId == roundOutcome.RoundId)
-                    .Include(x => x.DogPositions)
-                    .ToList();
-
-                if (!roundBets.Any())
-                {
-                    break;
-                }
-
-                //process all bets
-                foreach (var bet in roundBets)
-                {
-                    ProcessBet(bet, roundOutcome);
-                }
-
-                this.betsRepository.Commit();
+                return;
             }
+
+            //process all bets
+            foreach (var bet in roundBets)
+            {
+                ProcessBet(bet, roundBetsProcessData.RaceDogResults);
+            }
+
+            this.betsRepository.Commit();
 
             //process all sucess tickets THIS CAN BE MOVED TO TICKET SERVICE ???
             this.ticketService.UpdateSuccessTicketsToWon();
             this.ticketService.UpdateSuccessTicketsToLost();
         }
 
-        private void ProcessBet(Bet bet, RoundOutcome roundOutcome)
+        private void ProcessBet(Bet bet, IEnumerable<RaceDogResultsRecord> raceDogsResult)
         {
             if (bet.BetType == BetType.Position)
             {
@@ -62,7 +58,7 @@ namespace PlayNirvana.Bll.Services
 
                 foreach (var dogPosition in bet.DogPositions)
                 {
-                    if (roundOutcome.RaceDogResults.ElementAt(dogPosition.Position).RacingDogId != dogPosition.RacingDogId)
+                    if (raceDogsResult.ElementAt(dogPosition.Position).RacingDogId != dogPosition.RacingDogId)
                     {
                         bet.BetStatus = BetStatus.Lost;
                         break;

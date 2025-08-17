@@ -27,7 +27,12 @@ namespace PlayNirvana.Bll.DataContext.Repositories.Implementation
             return IdleRoundQuery().Count();
         }
 
-        public DateTime GetLastIdleRoundStartDate()
+        public int GetActiveRoundsCount()
+        {
+            return ActiveRoundQuery().Count();
+        }
+
+        public DateTime GetLastIdleRoundStart()
         {
             return IdleRoundQuery()
                 .OrderByDescending(x => x.Start)
