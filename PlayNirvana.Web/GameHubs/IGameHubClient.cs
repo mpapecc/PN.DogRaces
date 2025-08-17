@@ -2,6 +2,7 @@
 {
     public interface IGameHubClient
     {
-        Task SendRoundResult(object roundResult);
+        Task RoundFinished(object roundResult);
+        Task RoundStarted(object roundResult);
     }
 }

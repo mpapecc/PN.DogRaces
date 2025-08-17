@@ -6,7 +6,7 @@ namespace PlayNirvana.Web.GameHubs
     {
         public Task SendRoundResult(object roundResult)
         {
-            return Clients.All.SendRoundResult(roundResult);
+            return Clients.All.RoundFinished(roundResult);
         }
     }
 }
