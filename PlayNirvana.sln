@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.Bll", "PlayNirv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.Shared", "PlayNirvana.Shared\PlayNirvana.Shared.csproj", "{E7BA8053-D970-45D5-A85D-493D7BE7C75C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.BetsService", "PlayNirvana.BetsService\PlayNirvana.BetsService.csproj", "{8FABE6D6-73C0-43C4-8C48-08742ED6D97A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.TicketsService", "PlayNirvana.TicketsService\PlayNirvana.TicketsService.csproj", "{8FABE6D6-73C0-43C4-8C48-08742ED6D97A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WorkerServices", "WorkerServices", "{67E3F582-993B-436D-B1B3-A17F58CEBA25}"
 EndProject
