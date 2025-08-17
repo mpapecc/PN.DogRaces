@@ -1,7 +1,7 @@
-﻿using PlayNirvana.Bll.DataContext.Repositories.Abstraction;
+﻿using PlayNirvana.Bll.Repositories;
 using PlayNirvana.Domain.Entites.BaseEntities;
 
-namespace PlayNirvana.Bll.DataContext.Repositories.Implementation
+namespace PlayNirvana.Infrastructure.DataContext.Repositories
 {
     public class BaseRepository<T> : IRepository<T> where T : BaseEntity
     {

@@ -1,6 +1,6 @@
 ﻿using PlayNirvana.Domain.Entites.BaseEntities;
 
-namespace PlayNirvana.Bll.DataContext.Repositories.Abstraction
+namespace PlayNirvana.Bll.Repositories
 {
     public interface IRepository<T> where T : BaseEntity
     {

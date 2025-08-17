@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using PlayNirvana.Bll.DataContext.Repositories.Implementation;
 using PlayNirvana.Bll.Models;
+using PlayNirvana.Bll.Services;
 
 namespace PlayNirvana.Web.Controllers
 {
@@ -9,17 +9,17 @@ namespace PlayNirvana.Web.Controllers
     [ApiController]
     public class RoundController : Controller
     {
-        private readonly RoundRepository roundRepository;
+        private readonly RoundService roundService;
 
-        public RoundController(RoundRepository roundRepository)
+        public RoundController(RoundService roundService)
         {
-            this.roundRepository = roundRepository;
+            this.roundService = roundService;
         }
 
         [HttpGet(nameof(GetActiveRounds))]
         public IEnumerable<RoundModel> GetActiveRounds()
         {
-            return this.roundRepository.GetActiveRounds();
+            return this.roundService.GetActiveRounds();
         }
     }
 }

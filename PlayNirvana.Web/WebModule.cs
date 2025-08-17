@@ -1,16 +1,18 @@
 ﻿using MassTransit;
 using Microsoft.IdentityModel.Protocols.Configuration;
-using PlayNirvana.Bll.IoC;
+using PlayNirvana.Bll;
+using PlayNirvana.Infrastructure;
 using PlayNirvana.Shared.Options;
 using PlayNirvana.Web.Consumers;
 
-namespace PlayNirvana.Web.IoC
+namespace PlayNirvana.Web
 {
     public static class WebModule
     {
         public static IServiceCollection RegisterWebModule(this IServiceCollection services, IConfigurationManager configuration)
         {
             services.RegisterBllModule();
+            services.RegisterInfrastructureModule();
             services.RegisterMassTransit(configuration);
 
             services.AddSignalR();

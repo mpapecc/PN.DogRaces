@@ -18,5 +18,6 @@
   <ItemGroup>
     <ProjectReference Include="..\PlayNirvana.Bll\PlayNirvana.Bll.csproj" />
     <ProjectReference Include="..\PlayNirvana.Domain\PlayNirvana.Domain.csproj" />
+    <ProjectReference Include="..\PlayNirvana.Infrastructure\PlayNirvana.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

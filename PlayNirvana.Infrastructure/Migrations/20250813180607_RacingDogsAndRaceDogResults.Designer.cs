@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using PlayNirvana.Bll.DataContext;
+using PlayNirvana.Infrastructure.DataContext;
 
 #nullable disable
 
-namespace PlayNirvana.Bll.Migrations
+namespace PlayNirvana.Infrastructure.Migrations
 {
     [DbContext(typeof(PlayNirvanaDbContext))]
-    [Migration("20250814001142_Tickets")]
-    partial class Tickets
+    [Migration("20250813180607_RacingDogsAndRaceDogResults")]
+    partial class RacingDogsAndRaceDogResults
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,90 +24,6 @@ namespace PlayNirvana.Bll.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("PlayNirvana.Domain.Entites.Bet", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BetType")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("RoundId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TicketId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoundId");
-
-                    b.HasIndex("TicketId");
-
-                    b.ToTable("Bets");
-                });
-
-            modelBuilder.Entity("PlayNirvana.Domain.Entites.DogPosition", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BetId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Position")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RacingDogId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BetId");
-
-                    b.HasIndex("RacingDogId");
-
-                    b.ToTable("DogPositions");
-                });
-
-            modelBuilder.Entity("PlayNirvana.Domain.Entites.RaceDogResult", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Place")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RacingDogId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RoundId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RacingDogId");
-
-                    b.HasIndex("RoundId");
-
-                    b.ToTable("RaceDogResults");
-                });
 
             modelBuilder.Entity("PlayNirvana.Domain.Entites.RacingDog", b =>
                 {
@@ -210,7 +126,7 @@ namespace PlayNirvana.Bll.Migrations
                     b.ToTable("Rounds");
                 });
 
-            modelBuilder.Entity("PlayNirvana.Domain.Entites.Ticket", b =>
+            modelBuilder.Entity("PlayNirvana.Domain.RaceDogResult", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -218,61 +134,25 @@ namespace PlayNirvana.Bll.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<double>("BetAmount")
-                        .HasColumnType("float");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("TicketStatus")
+                    b.Property<int>("Place")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("UpdatedOn")
-                        .HasColumnType("datetime2");
+                    b.Property<int>("RacingDogId")
+                        .HasColumnType("int");
 
-                    b.Property<double>("WinAmount")
-                        .HasColumnType("float");
+                    b.Property<int>("RoundId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tickets");
+                    b.HasIndex("RacingDogId");
+
+                    b.HasIndex("RoundId");
+
+                    b.ToTable("RaceDogResults");
                 });
 
-            modelBuilder.Entity("PlayNirvana.Domain.Entites.Bet", b =>
-                {
-                    b.HasOne("PlayNirvana.Domain.Entites.Round", "Round")
-                        .WithMany()
-                        .HasForeignKey("RoundId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PlayNirvana.Domain.Entites.Ticket", null)
-                        .WithMany("Bets")
-                        .HasForeignKey("TicketId");
-
-                    b.Navigation("Round");
-                });
-
-            modelBuilder.Entity("PlayNirvana.Domain.Entites.DogPosition", b =>
-                {
-                    b.HasOne("PlayNirvana.Domain.Entites.Bet", "Bet")
-                        .WithMany("DogPositions")
-                        .HasForeignKey("BetId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PlayNirvana.Domain.Entites.RacingDog", "RacingDog")
-                        .WithMany()
-                        .HasForeignKey("RacingDogId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Bet");
-
-                    b.Navigation("RacingDog");
-                });
-
-            modelBuilder.Entity("PlayNirvana.Domain.Entites.RaceDogResult", b =>
+            modelBuilder.Entity("PlayNirvana.Domain.RaceDogResult", b =>
                 {
                     b.HasOne("PlayNirvana.Domain.Entites.RacingDog", "RacingDog")
                         .WithMany()
@@ -289,16 +169,6 @@ namespace PlayNirvana.Bll.Migrations
                     b.Navigation("RacingDog");
 
                     b.Navigation("Round");
-                });
-
-            modelBuilder.Entity("PlayNirvana.Domain.Entites.Bet", b =>
-                {
-                    b.Navigation("DogPositions");
-                });
-
-            modelBuilder.Entity("PlayNirvana.Domain.Entites.Ticket", b =>
-                {
-                    b.Navigation("Bets");
                 });
 #pragma warning restore 612, 618
         }

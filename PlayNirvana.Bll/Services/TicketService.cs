@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PlayNirvana.Bll.DataContext.Repositories.Abstraction;
 using PlayNirvana.Bll.Models.TicketModels;
+using PlayNirvana.Bll.Repositories;
 using PlayNirvana.Bll.Validators;
 using PlayNirvana.Bll.Validators.TicketValidators;
 using PlayNirvana.Domain.Entites;
@@ -61,28 +61,32 @@ namespace PlayNirvana.Bll.Services
 
         //FOR THIS METHODS WE SHOULD CHECK IF BETS ARE SYSTEMATIC E.G. 2 OUT OF 3 FOR WINNING
 
-        public void UpdateSuccessTicketsToWon()
+        public void UpdateSuccessTicketsToWon(int roundId)
         {
-            var wonTicketsQuery = this.ticketRepository.Query()
-                    .Where(x => x.TicketStatus == TicketStatus.Success && x.Bets.All(x => x.BetStatus == BetStatus.Won));
+            var wonTicketsInCurrentRoundQuery = this.ticketRepository.Query()
+                    .Where(x => x.TicketStatus == TicketStatus.Success)
+                    .Where(x => x.Bets.Any(x => x.RoundId == roundId) && x.Bets.All(x => x.BetStatus == BetStatus.Won));
+
+            var aaa = wonTicketsInCurrentRoundQuery.ToQueryString();
 
             //handle wallet actions
 
-            this.walletService.ProcessReservation(12, TicketStatus.Success);
+            //this.walletService.ProcessReservation(12, TicketStatus.Success);
 
-            wonTicketsQuery
+            wonTicketsInCurrentRoundQuery
                     .ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Won));
         }
 
-        public void UpdateSuccessTicketsToLost()
+        public void UpdateSuccessTicketsToLost(int roundId)
         {
-            var lostTicketsQuery = this.ticketRepository.Query()
-                    .Where(x => x.TicketStatus == TicketStatus.Success && x.Bets.Any(x => x.BetStatus == BetStatus.Lost));
+            var lostTicketsInCurrentRoundQuery = this.ticketRepository.Query()
+                .Where(x => x.TicketStatus == TicketStatus.Success)
+                .Where(x => x.Bets.Any(x => x.RoundId == roundId) && x.Bets.Any(x => x.BetStatus == BetStatus.Lost));
 
             //handle wallet actions
             //this.walletService.ProcessReservation(12, TicketStatus.Lost);
 
-            lostTicketsQuery
+            lostTicketsInCurrentRoundQuery
                     .ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Lost));
         }
 

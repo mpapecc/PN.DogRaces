@@ -1,25 +1,14 @@
 ﻿using System.Reflection;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using PlayNirvana.Bll.DataContext;
-using PlayNirvana.Bll.DataContext.Repositories.Abstraction;
-using PlayNirvana.Bll.DataContext.Repositories.Implementation;
 using PlayNirvana.Bll.Services;
 using PlayNirvana.Bll.Validators;
 
-namespace PlayNirvana.Bll.IoC
+namespace PlayNirvana.Bll
 {
     public static class BllModule
     {
         public static IServiceCollection RegisterBllModule(this IServiceCollection services)
         {
-            services.AddDbContext<PlayNirvanaDbContext>(options =>
-            {
-                options.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;MultipleActiveResultSets=True;Initial Catalog=PlayNirvana;Application Name=PlayNirvana");
-            });
-
-            services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
-            services.AddScoped<RoundRepository>();
             services.AddScoped<RoundService>();
             services.AddScoped<TicketService>();
             services.AddScoped<BetService>();

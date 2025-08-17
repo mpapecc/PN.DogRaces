@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PlayNirvana.Domain.Entites;
 
-namespace PlayNirvana.Bll.DataContext
+namespace PlayNirvana.Infrastructure.DataContext
 {
-    public class PlayNirvanaDbContext: DbContext
+    public class PlayNirvanaDbContext : DbContext
     {
-        public PlayNirvanaDbContext(DbContextOptions<PlayNirvanaDbContext> options):base(options)
+        public PlayNirvanaDbContext(DbContextOptions<PlayNirvanaDbContext> options) : base(options)
         {
         }
 

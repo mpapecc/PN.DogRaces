@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using PlayNirvana.Bll.DataContext;
+using PlayNirvana.Infrastructure.DataContext;
 
 #nullable disable
 
-namespace PlayNirvana.Bll.Migrations
+namespace PlayNirvana.Infrastructure.Migrations
 {
     [DbContext(typeof(PlayNirvanaDbContext))]
     [Migration("20250812165832_InitialCreate")]

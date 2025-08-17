@@ -1,6 +1,6 @@
 ﻿using MassTransit;
 using Microsoft.AspNetCore.SignalR;
-using PlayNirvana.Bll.DataContext.Repositories.Abstraction;
+using PlayNirvana.Bll.Repositories;
 using PlayNirvana.Bll.Services;
 using PlayNirvana.Domain.Entites;
 using PlayNirvana.Shared.Contracts;

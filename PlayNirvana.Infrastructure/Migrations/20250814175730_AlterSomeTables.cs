@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace PlayNirvana.Bll.Migrations
+namespace PlayNirvana.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class AlterSomeTables : Migration

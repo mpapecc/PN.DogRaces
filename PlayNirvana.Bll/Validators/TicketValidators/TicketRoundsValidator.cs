@@ -1,13 +1,13 @@
-﻿using PlayNirvana.Bll.DataContext.Repositories.Implementation;
+﻿using PlayNirvana.Bll.Repositories;
 using PlayNirvana.Domain.Entites;
 
 namespace PlayNirvana.Bll.Validators.TicketValidators
 {
     public class TicketRoundsValidator : IValidator<Ticket>
     {
-        private readonly RoundRepository roundRepository;
+        private readonly IRoundRepository roundRepository;
 
-        public TicketRoundsValidator(RoundRepository roundRepository)
+        public TicketRoundsValidator(IRoundRepository roundRepository)
         {
             this.roundRepository = roundRepository;
         }

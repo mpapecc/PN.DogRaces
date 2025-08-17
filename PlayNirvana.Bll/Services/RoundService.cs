@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PlayNirvana.Bll.DataContext.Repositories.Abstraction;
-using PlayNirvana.Bll.DataContext.Repositories.Implementation;
+using PlayNirvana.Bll.Models;
+using PlayNirvana.Bll.Repositories;
 using PlayNirvana.Domain.Entites;
 using PlayNirvana.Shared.Contracts;
 using PlayNirvana.Shared.Enums;
@@ -9,13 +9,13 @@ namespace PlayNirvana.Bll.Services
 {
     public class RoundService
     {
-        private readonly RoundRepository roundRepository;
+        private readonly IRoundRepository roundRepository;
         private readonly IRepository<RaceDogResult> raceDogResultRepository;
         private readonly int newRoundsThreshold = 30;
         private readonly int roundDuration = 10;
         private readonly int minimunActiveRounds = 5;
 
-        public RoundService(RoundRepository roundRepository, IRepository<RaceDogResult> raceDogResultRepository)
+        public RoundService(IRoundRepository roundRepository, IRepository<RaceDogResult> raceDogResultRepository)
         {
             this.roundRepository = roundRepository;
             this.raceDogResultRepository = raceDogResultRepository;
@@ -85,6 +85,17 @@ namespace PlayNirvana.Bll.Services
             }
 
             return rounds;
+        }
+
+        public IEnumerable<RoundModel> GetActiveRounds()
+        {
+            return this.roundRepository.ActiveRoundQuery()
+                .Select(x => new RoundModel()
+                {
+                    RoundStatus = x.RoundStatus,
+                    Start = x.Start
+                })
+                .ToList();
         }
 
         public void ActivateRound(int roundId)

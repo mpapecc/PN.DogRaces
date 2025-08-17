@@ -1,10 +1,13 @@
-using PlayNirvana.Bll.IoC;
 using MassTransit;
 using PlayNirvana.Shared.Options;
 using Microsoft.IdentityModel.Protocols.Configuration;
+using PlayNirvana.Bll;
+using PlayNirvana.Infrastructure;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.RegisterBllModule();
+builder.Services.RegisterInfrastructureModule();
+
 builder.Logging
     .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
 

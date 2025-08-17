@@ -1,11 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using PlayNirvana.Bll.Models;
+﻿using PlayNirvana.Bll.Models;
+using PlayNirvana.Bll.Repositories;
 using PlayNirvana.Domain.Entites;
 using PlayNirvana.Shared.Enums;
 
-namespace PlayNirvana.Bll.DataContext.Repositories.Implementation
+namespace PlayNirvana.Infrastructure.DataContext.Repositories
 {
-    public class RoundRepository : BaseRepository<Round>
+    public class RoundRepository : BaseRepository<Round>, IRoundRepository
     {
         public RoundRepository(PlayNirvanaDbContext context) : base(context)
         {

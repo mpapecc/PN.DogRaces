@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PlayNirvana.Bll.DataContext.Repositories.Abstraction;
+using PlayNirvana.Bll.Repositories;
 using PlayNirvana.Domain.Entites;
 using PlayNirvana.Shared.Contracts;
 using PlayNirvana.Shared.Enums;
@@ -32,22 +32,22 @@ namespace PlayNirvana.Bll.Services
                 .Include(x => x.DogPositions)
                 .ToList();
 
-            if (!roundBets.Any())
-            {
-                return;
-            }
+            //if (!roundBets.Any())
+            //{
+            //    return;
+            //}
 
-            //process all bets
-            foreach (var bet in roundBets)
-            {
-                ProcessBet(bet, roundBetsProcessData.RaceDogResults);
-            }
+            ////process all bets
+            //foreach (var bet in roundBets)
+            //{
+            //    ProcessBet(bet, roundBetsProcessData.RaceDogResults);
+            //}
 
-            this.betsRepository.Commit();
+            //this.betsRepository.Commit();
 
             //process all sucess tickets THIS CAN BE MOVED TO TICKET SERVICE ???
-            this.ticketService.UpdateSuccessTicketsToWon();
-            this.ticketService.UpdateSuccessTicketsToLost();
+            this.ticketService.UpdateSuccessTicketsToWon(roundBetsProcessData.RoundId);
+            this.ticketService.UpdateSuccessTicketsToLost(roundBetsProcessData.RoundId);
         }
 
         private void ProcessBet(Bet bet, IEnumerable<RaceDogResultsRecord> raceDogsResult)

@@ -4,7 +4,7 @@
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace PlayNirvana.Bll.Migrations
+namespace PlayNirvana.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class RacingDogsAndRaceDogResults : Migration

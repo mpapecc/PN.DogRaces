@@ -1,6 +1,7 @@
 using MassTransit;
 using Microsoft.IdentityModel.Protocols.Configuration;
-using PlayNirvana.Bll.IoC;
+using PlayNirvana.Bll;
+using PlayNirvana.Infrastructure;
 using PlayNirvana.Scheduler.BackgroundServices;
 using PlayNirvana.Shared.Options;
 
@@ -11,6 +12,7 @@ builder.Services.Configure<HostOptions>(opts => opts.ShutdownTimeout = TimeSpan.
 builder.Logging
     .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
 builder.Services.RegisterBllModule();
+builder.Services.RegisterInfrastructureModule();
 
 var massTransitOptions = builder.Configuration.GetSection(nameof(MassTransitOptions)).Get<MassTransitOptions>();
 
