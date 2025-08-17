@@ -1,6 +1,8 @@
 using MassTransit;
+using Microsoft.IdentityModel.Protocols.Configuration;
 using PlayNirvana.Bll.IoC;
 using PlayNirvana.Scheduler.BackgroundServices;
+using PlayNirvana.Shared.Options;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<RoundStarterService>();
@@ -10,19 +12,23 @@ builder.Logging
     .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
 builder.Services.RegisterBllModule();
 
+var massTransitOptions = builder.Configuration.GetSection(nameof(MassTransitOptions)).Get<MassTransitOptions>();
+
+if (massTransitOptions == null)
+    throw new InvalidConfigurationException("MassTransit configuration is missing.");
+
 builder.Services.AddMassTransit(x =>
 {
-    // No consumers here; this app only publishes
     x.SetKebabCaseEndpointNameFormatter();
 
     x.AddDelayedMessageScheduler();
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", h =>
+        cfg.Host(massTransitOptions.Host, h =>
         {
-            h.Username("guest");
-            h.Password("guest");
+            h.Username(massTransitOptions.User);
+            h.Password(massTransitOptions.Pwd);
         });
 
         cfg.UseDelayedMessageScheduler();

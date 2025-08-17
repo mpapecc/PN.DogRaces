@@ -48,7 +48,7 @@ namespace PlayNirvana.Bll.Services
                 var lastRoundStartTime = roundRepository.GetLastIdleRoundStart();
                 GenerateRounds(lastRoundStartTime);
             }
-            else if (activeRoundsCount <= this.minimunActiveRounds)
+            else if (activeRoundsCount <= this.minimunActiveRounds + 5)
             {
                 ActivateRounds(this.minimunActiveRounds + 5);
             }

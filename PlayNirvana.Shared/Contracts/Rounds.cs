@@ -2,4 +2,5 @@
 {
     public record ProcessRoundBets(int RoundId, IEnumerable<RaceDogResultsRecord> RaceDogResults);
     public record RoundFinished(int RoundId, IEnumerable<RaceDogResultsRecord> RaceDogResults);
+    public record RoundStarted(int RoundId);
 }

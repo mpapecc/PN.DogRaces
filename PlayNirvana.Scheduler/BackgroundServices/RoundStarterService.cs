@@ -61,14 +61,17 @@ namespace PlayNirvana.Scheduler.BackgroundServices
 
             //start race
             roundService.StartLockedRound(roundId);
+            logger.LogInformation($"Notifying clinets that round with Id {roundId} has started");
+            publish.Publish(new RoundStarted(roundId), ct);
 
             logger.LogInformation($"Publishing round for process with Id {roundId} {DateTime.Now}");
-            var roundForProcess = new ProcessRoundBets(roundId, roundsOutcome);
-            publish.Publish(roundForProcess, ct);
+            publish.Publish(new ProcessRoundBets(roundId, roundsOutcome), ct);
 
             logger.LogInformation($"Scheduling end of round with Id {roundId} {DateTime.Now}");
-            var roundsFinished = new RoundFinished(roundId, roundsOutcome);
-            return scheduler.SchedulePublish(DateTime.UtcNow + TimeSpan.FromSeconds(raceDuration), roundsFinished, ct);
+            return scheduler.SchedulePublish(
+                DateTime.UtcNow + TimeSpan.FromSeconds(raceDuration), 
+                new RoundFinished(roundId, roundsOutcome), 
+                ct);
         }
     }
 }

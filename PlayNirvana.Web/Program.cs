@@ -5,7 +5,8 @@ using PlayNirvana.Web.IoC;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.RegisterWebModule();
+builder.Services.RegisterWebModule(builder.Configuration);
+
 builder.Logging
     .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
 

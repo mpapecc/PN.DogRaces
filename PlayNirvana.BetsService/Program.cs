@@ -1,24 +1,30 @@
 using PlayNirvana.Bll.IoC;
 using MassTransit;
-using PlayNirvana.BetsService.Consumers;
+using PlayNirvana.Shared.Options;
+using Microsoft.IdentityModel.Protocols.Configuration;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.RegisterBllModule();
 builder.Logging
     .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
+
+var massTransitOptions = builder.Configuration.GetSection(nameof(MassTransitOptions)).Get<MassTransitOptions>();
+
+if (massTransitOptions == null)
+    throw new InvalidConfigurationException("MassTransit configuration is missing.");
+
 builder.Services.AddMassTransit(x =>
 {
-    x.AddConsumer<ProcessRoundBetsConsumer>();
-    x.AddConsumer<CreateTicketConsumer>();
+    x.AddConsumers(typeof(Program).Assembly);
 
     x.SetKebabCaseEndpointNameFormatter();
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", h =>
+        cfg.Host(massTransitOptions.Host, h =>
         {
-            h.Username("guest");
-            h.Password("guest");
+            h.Username(massTransitOptions.User);
+            h.Password(massTransitOptions.Pwd);
         });
 
         cfg.ConfigureEndpoints(context);
