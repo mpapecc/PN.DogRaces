@@ -1,6 +1,6 @@
 ﻿using PlayNirvana.CommonModule.DataContext.BaseEntities;
 
-namespace PlayNirvana.RoundModule.Domain.Entites
+namespace PlayNirvana.TicketModule.Domain.Entites
 {
     public class DogPosition : BaseEntity
     {

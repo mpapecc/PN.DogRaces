@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using PlayNirvana.Common.Models;
+using PlayNirvana.CommonModule.Models;
 using PlayNirvana.RoundModule.Application.Models;
 using PlayNirvana.RoundModule.Application.Services;
 using PlayNirvana.RoundModule.Domain.Entites;

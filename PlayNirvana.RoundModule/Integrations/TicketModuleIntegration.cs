@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using PlayNirvana.Common.Interfaces;
-using PlayNirvana.Common.Models;
+using PlayNirvana.CommonModule.Interfaces;
+using PlayNirvana.CommonModule.Models;
 
 namespace PlayNirvana.RoundModule.Integrations
 {

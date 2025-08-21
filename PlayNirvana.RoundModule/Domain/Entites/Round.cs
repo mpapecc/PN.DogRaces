@@ -1,4 +1,4 @@
-﻿using PlayNirvana.Common.DataContext.BaseEntities;
+﻿using PlayNirvana.CommonModule.DataContext.BaseEntities;
 using PlayNirvana.RoundModule.Common.Enums;
 
 namespace PlayNirvana.RoundModule.Domain.Entites

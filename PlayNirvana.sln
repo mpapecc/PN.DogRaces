@@ -7,9 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.Web", "PlayNirv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.RoundModule", "PlayNirvana.RoundModule\PlayNirvana.RoundModule.csproj", "{51CA1D67-D458-48BC-8361-291FF6B665F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.Common", "PlayNirvana.Common\PlayNirvana.Common.csproj", "{19F9445A-6E22-4AA4-9549-5764D295428B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.CommonModule", "PlayNirvana.CommonModule\PlayNirvana.CommonModule.csproj", "{19F9445A-6E22-4AA4-9549-5764D295428B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.TicketModule", "TicketModule\PlayNirvana.TicketModule.csproj", "{F161720C-693A-41D8-B02E-C4E587C79DB3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.TicketModule", "PlayNirvana.TicketModule\PlayNirvana.TicketModule.csproj", "{F161720C-693A-41D8-B02E-C4E587C79DB3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,5 +1,5 @@
-﻿using PlayNirvana.Common.DataContext;
-using PlayNirvana.Common.DataContext.BaseEntities;
+﻿using PlayNirvana.CommonModule.DataContext;
+using PlayNirvana.CommonModule.DataContext.BaseEntities;
 using PlayNirvana.RoundModule.Application.Repositories;
 
 namespace PlayNirvana.RoundModule.Infrastructure.DataContext

@@ -1,6 +1,6 @@
 using System.Reflection;
 using PlayNirvana.Web;
-using PlayNirvana.Common;
+using PlayNirvana.CommonModule;
 using PlayNirvana.RoundModule;
 using PlayNirvana.TicketModule;
 

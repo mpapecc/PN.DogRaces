@@ -1,12 +1,4 @@
-﻿using MassTransit;
-using Microsoft.IdentityModel.Protocols.Configuration;
-using PlayNirvana.Common;
-using PlayNirvana.RoundModule;
-using PlayNirvana.TicketModule;
-
-//using PlayNirvana.Web.Consumers;
-
-namespace PlayNirvana.Web
+﻿namespace PlayNirvana.Web
 {
     public static class WebModule
     {

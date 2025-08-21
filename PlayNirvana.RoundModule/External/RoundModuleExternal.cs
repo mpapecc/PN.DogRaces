@@ -1,4 +1,4 @@
-﻿using PlayNirvana.Common.Interfaces;
+﻿using PlayNirvana.CommonModule.Interfaces;
 using PlayNirvana.RoundModule.Application.Repositories;
 
 namespace PlayNirvana.RoundModule.External

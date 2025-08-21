@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PlayNirvana.Common.DataContext;
+using PlayNirvana.CommonModule.DataContext;
 using PlayNirvana.RoundModule.Domain.Entites;
 
 namespace PlayNirvana.RoundModule.Infrastructure.DataContext

@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PlayNirvana.Common.Models;
+using PlayNirvana.CommonModule.Models;
 using PlayNirvana.RoundModule.Application.Models;
 using PlayNirvana.RoundModule.Application.Repositories;
 using PlayNirvana.RoundModule.Common.Enums;
