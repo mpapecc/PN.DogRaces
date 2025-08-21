@@ -18,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\PlayNirvana.Bll\PlayNirvana.Bll.csproj" />
-    <ProjectReference Include="..\Core\PlayNirvana.Infrastructure\PlayNirvana.Infrastructure.csproj" />
+    <ProjectReference Include="..\PlayNirvana.RoundModule\PlayNirvana.RoundModule.csproj" />
+    <ProjectReference Include="..\TicketModule\PlayNirvana.TicketModule.csproj" />
   </ItemGroup>
 
 </Project>

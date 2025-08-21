@@ -2,7 +2,7 @@
 using PlayNirvana.Bll.Models.TicketModels;
 using PlayNirvana.Bll.Services;
 
-namespace PlayNirvana.BetsService.Consumers
+namespace PlayNirvana.TicketsService.Consumers
 {
     public class CreateTicketConsumer : IConsumer<CreateTicketModel>
     {

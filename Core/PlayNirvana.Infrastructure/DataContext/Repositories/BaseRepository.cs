@@ -3,7 +3,7 @@ using PlayNirvana.Domain.Entites.BaseEntities;
 
 namespace PlayNirvana.Infrastructure.DataContext.Repositories
 {
-    public class BaseRepository<T> : IRepository<T> where T : BaseEntity
+    public abstract class BaseRepository<T> : IRepository<T> where T : BaseEntity
     {
         private readonly PlayNirvanaDbContext context;
 

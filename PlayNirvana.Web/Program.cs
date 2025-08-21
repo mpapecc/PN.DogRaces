@@ -1,14 +1,20 @@
-using MassTransit;
+using System.Reflection;
 using PlayNirvana.Web;
-using PlayNirvana.Web.Consumers;
-using PlayNirvana.Web.GameHubs;
+using PlayNirvana.Common;
+using PlayNirvana.RoundModule;
+using PlayNirvana.TicketModule;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.RegisterWebModule(builder.Configuration);
-
 builder.Logging
     .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
+
+//builder.Services.AddControllers().AddApplicationPart(Assembly.Load(new AssemblyName("PlayNirvana.RoundModule")));
+builder.Services.AddControllers().AddApplicationPart(Assembly.Load(new AssemblyName("PlayNirvana.TicketModule")));
+builder.Services.RegisterCommonModule();
+
+builder.Services.RegisterWeb();
+builder.Services.RegisterRoundModule(builder.Configuration);
+builder.Services.RegisterTicketModule(builder.Configuration);
 
 var app = builder.Build();
 app.UseExceptionHandler();
@@ -23,7 +29,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-app.MapHub<GameHub>("/gamehub");
+app.RegisterRoundApps();
+//app.MapHub<GameHub>("/gamehub");
 app.MapControllers();
 
 app.Run();

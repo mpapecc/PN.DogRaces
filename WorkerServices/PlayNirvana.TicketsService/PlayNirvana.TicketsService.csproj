@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>dotnet-PlayNirvana.BetsService-e2d2392f-fbab-47c9-8c16-0576b47a9c95</UserSecretsId>
+    <UserSecretsId>dotnet-PlayNirvana.TicketsService-e2d2392f-fbab-47c9-8c16-0576b47a9c95</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

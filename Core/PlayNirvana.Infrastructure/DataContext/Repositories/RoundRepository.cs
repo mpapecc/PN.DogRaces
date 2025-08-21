@@ -1,4 +1,4 @@
-﻿using PlayNirvana.Bll.Models;
+﻿using Microsoft.EntityFrameworkCore;
 using PlayNirvana.Bll.Repositories;
 using PlayNirvana.Domain.Entites;
 using PlayNirvana.Shared.Enums;
@@ -7,19 +7,16 @@ namespace PlayNirvana.Infrastructure.DataContext.Repositories
 {
     public class RoundRepository : BaseRepository<Round>, IRoundRepository
     {
+        private readonly PlayNirvanaDbContext context;
+
         public RoundRepository(PlayNirvanaDbContext context) : base(context)
         {
+            this.context = context;
         }
 
-        public IEnumerable<RoundModel> GetActiveRounds()
+        public void Sp_TranslateActiveAndIdleRoundsStartInFuture()
         {
-            return ActiveRoundQuery()
-                .Select(x => new RoundModel()
-                {
-                    RoundStatus = x.RoundStatus,
-                    Start = x.Start
-                })
-                .ToList();
+            this.context.Database.ExecuteSql($"EXECUTE dbo.sproc_TranslateActiveAndIdleRoundsStartInFuture");
         }
 
         public int GetIdleRoundsCount()
@@ -40,13 +37,6 @@ namespace PlayNirvana.Infrastructure.DataContext.Repositories
                 .FirstOrDefault();
         }
 
-        public IQueryable<Round> GetNextNIdleRounds(int roundsNumber)
-        {
-            return IdleRoundQuery()
-                .OrderBy(x => x.Start)
-                .Take(roundsNumber);
-        }
-
         public IQueryable<Round> IdleRoundQuery()
         {
             return base.Query().Where(x => x.RoundStatus == RoundStatus.Idle);
@@ -62,16 +52,16 @@ namespace PlayNirvana.Infrastructure.DataContext.Repositories
             return base.Query().Where(x => x.RoundStatus == RoundStatus.Locked);
         }
 
-        public IQueryable<Round> InProgressRoundQuery()
-        {
-            return base.Query().Where(x => x.RoundStatus == RoundStatus.InProgress);
-        }
-
-        public IQueryable<Round> GetNextRoundForActivationQuery()
+        public IQueryable<Round> GetNextRoundForExecutionQuery()
         {
             return ActiveRoundQuery()
                 .OrderBy(x => x.Start)
                 .Take(1);
+        }
+
+        public IQueryable<Round> ActiveAndIdleRoundQuery()
+        {
+            return base.Query().Where(x => x.RoundStatus == RoundStatus.Active || x.RoundStatus == RoundStatus.Idle);
         }
     }
 }

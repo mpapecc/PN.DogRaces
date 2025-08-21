@@ -1,7 +1,7 @@
 ﻿using NCrontab;
 using static NCrontab.CrontabSchedule;
 
-namespace PlayNirvana.Scheduler.BackgroundServices
+namespace PlayNirvana.RoundsManager.BackgroundServices
 {
     public abstract class SchedulableBackgroundService : BackgroundService
     {

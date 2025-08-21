@@ -23,7 +23,7 @@ namespace PlayNirvana.Bll.Services
             this.ticketService = ticketService;
         }
 
-        public void ProcessRoundBets(ProcessRoundBets roundBetsProcessData)
+        public void ProcessRoundBets(RaceStartWithBetLock roundBetsProcessData)
         {
             //in production scenarion here we could get 100 or even 1000 or more records
             //it would be good to use async enumerator so that all records are not buffered into memory befor processing but rather processed as stream
@@ -32,18 +32,18 @@ namespace PlayNirvana.Bll.Services
                 .Include(x => x.DogPositions)
                 .ToList();
 
-            //if (!roundBets.Any())
-            //{
-            //    return;
-            //}
+            if (!roundBets.Any())
+            {
+                return;
+            }
 
-            ////process all bets
-            //foreach (var bet in roundBets)
-            //{
-            //    ProcessBet(bet, roundBetsProcessData.RaceDogResults);
-            //}
+            //process all bets
+            foreach (var bet in roundBets)
+            {
+                ProcessBet(bet, roundBetsProcessData.RaceDogResults);
+            }
 
-            //this.betsRepository.Commit();
+            this.betsRepository.Commit();
 
             //process all sucess tickets THIS CAN BE MOVED TO TICKET SERVICE ???
             this.ticketService.UpdateSuccessTicketsToWon(roundBetsProcessData.RoundId);

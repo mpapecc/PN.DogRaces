@@ -1,41 +1,39 @@
-﻿using MassTransit;
-using Microsoft.AspNetCore.SignalR;
-using PlayNirvana.Bll.Repositories;
-using PlayNirvana.Bll.Services;
-using PlayNirvana.Domain.Entites;
-using PlayNirvana.Shared.Contracts;
-using PlayNirvana.Web.GameHubs;
+﻿//using MassTransit;
+//using Microsoft.AspNetCore.SignalR;
+//using PlayNirvana.Bll.Repositories;
+//using PlayNirvana.Bll.Services;
+//using PlayNirvana.Common.DataContext;
+//using PlayNirvana.Domain.Entites;
 
-namespace PlayNirvana.Web.Consumers
-{
-    public class RoundFinishedConsumer : IConsumer<RoundFinished>
-    {
-        private readonly IHubContext<GameHub, IGameHubClient> gameHubClient;
-        private readonly IRepository<RaceDogResult> raceDogRepository;
-        private readonly RoundService roundService;
-        private readonly ILogger<RoundFinishedConsumer> logger;
+//using PlayNirvana.Shared.Contracts;
+//using PlayNirvana.Web.GameHubs;
 
-        public RoundFinishedConsumer(
-            IHubContext<GameHub, IGameHubClient> gameHubClient,
-            IRepository<RaceDogResult> raceDogRepository,
-            RoundService roundService,
-            ILogger<RoundFinishedConsumer> logger)
-        {
-            this.gameHubClient = gameHubClient;
-            this.raceDogRepository = raceDogRepository;
-            this.roundService = roundService;
-            this.logger = logger;
-        }
+//namespace PlayNirvana.Web.Consumers
+//{
+//    public class RoundFinishedConsumer : IConsumer<RoundFinished>
+//    {
+//        private readonly IHubContext<GameHub, IGameHubClient> gameHubClient;
+//        private readonly RoundService roundService;
+//        private readonly ILogger<RoundFinishedConsumer> logger;
 
-        public Task Consume(ConsumeContext<RoundFinished> context)
-        {
-            this.logger.LogInformation($"Consuming rounds finish event for round {context.Message.RoundId} => {DateTime.Now}");
-            //finish race
-            this.roundService.FinishRound(context.Message.RoundId);
+//        public RoundFinishedConsumer(
+//            IHubContext<GameHub, IGameHubClient> gameHubClient,
+//            IRepository<RaceDogResult> raceDogRepository,
+//            RoundService roundService,
+//            ILogger<RoundFinishedConsumer> logger)
+//        {
+//            this.gameHubClient = gameHubClient;
+//            this.roundService = roundService;
+//            this.logger = logger;
+//        }
 
-            this.gameHubClient.Clients.All.RoundFinished(context.Message.RaceDogResults);
+//        public Task Consume(ConsumeContext<RoundFinished> context)
+//        {
+//            this.logger.LogInformation($"Notifiying clients round {context.Message.RoundId} is finished => {DateTime.UtcNow}");
 
-            return Task.CompletedTask;
-        }
-    }
-}
+//            this.gameHubClient.Clients.All.RoundFinished(new { context.Message.RoundId, Order = this.roundService.GetRoundOutcome(context.Message.RoundId) });
+
+//            return Task.CompletedTask;
+//        }
+//    }
+//}

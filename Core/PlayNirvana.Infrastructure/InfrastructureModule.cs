@@ -10,10 +10,10 @@ namespace PlayNirvana.Infrastructure
     {
         public static IServiceCollection RegisterInfrastructureModule(this IServiceCollection services)
         {
-            services.AddDbContext<PlayNirvanaDbContext>(options =>
-            {
-                options.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;MultipleActiveResultSets=True;Initial Catalog=PlayNirvana;Application Name=PlayNirvana");
-            });
+            //services.AddDbContext<PlayNirvanaDbContext>(options =>
+            //{
+            //    options.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;MultipleActiveResultSets=True;Initial Catalog=PlayNirvana;Application Name=PlayNirvana");
+            //});
 
             services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
             services.AddScoped<IRoundRepository, RoundRepository>();

@@ -1,5 +1,4 @@
-﻿using PlayNirvana.Domain.Entites.BaseEntities;
-using PlayNirvana.Shared.Enums;
+﻿using PlayNirvana.Common.DataContext.BaseEntities;
 
 namespace PlayNirvana.Domain.Entites
 {

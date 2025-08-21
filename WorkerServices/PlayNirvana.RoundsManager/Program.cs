@@ -1,12 +1,14 @@
 using MassTransit;
 using Microsoft.IdentityModel.Protocols.Configuration;
 using PlayNirvana.Bll;
+using PlayNirvana.Bll.Services;
 using PlayNirvana.Infrastructure;
+using PlayNirvana.RoundsManager.BackgroundServices;
 using PlayNirvana.Scheduler.BackgroundServices;
 using PlayNirvana.Shared.Options;
 
 var builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddHostedService<RoundStarterService>();
+builder.Services.AddHostedService<RoundManagerService>();
 builder.Services.AddHostedService<RoundsGeneratorService>();
 builder.Services.Configure<HostOptions>(opts => opts.ShutdownTimeout = TimeSpan.FromSeconds(30));
 builder.Logging
@@ -35,8 +37,15 @@ builder.Services.AddMassTransit(x =>
 
         cfg.UseDelayedMessageScheduler();
     });
-});
-
+}); 
 var host = builder.Build();
+
+//handle db validation checks related to Rounds
+using IServiceScope scope = host.Services.GetService<IServiceScopeFactory>().CreateScope();
+var roundService = scope.ServiceProvider.GetService<RoundService>();
+
+roundService.TranslateActiveAndIdleRoundsStartInFuture();
+roundService.GenerateRoundIfNeeded();
+
 host.Run();
 
