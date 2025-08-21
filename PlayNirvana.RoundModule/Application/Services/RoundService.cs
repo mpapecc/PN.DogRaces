@@ -3,6 +3,7 @@ using PlayNirvana.CommonModule.Models;
 using PlayNirvana.RoundModule.Application.Models;
 using PlayNirvana.RoundModule.Application.Repositories;
 using PlayNirvana.RoundModule.Common.Enums;
+using PlayNirvana.RoundModule.Common.Exceptions;
 using PlayNirvana.RoundModule.Domain.Entites;
 
 namespace PlayNirvana.RoundModule.Application.Services
@@ -98,7 +99,7 @@ namespace PlayNirvana.RoundModule.Application.Services
             {
                 //should handle this more gracefully, althoug this should never happen since RoundsGenerator makes sure there are always active rounds
                 //maybe in this case manually call GenerateRounds()
-                throw new InvalidOperationException("There are no active rounds for locking");
+                throw new NoActiveRoundsException("There are no active rounds for locking");
             }
 
             return nextRoundStartData;

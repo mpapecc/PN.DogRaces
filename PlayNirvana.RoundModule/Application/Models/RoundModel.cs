@@ -17,6 +17,11 @@
             RaceStartWitBetLockDateTime = CalculateRoundRaceStartWithLock(start);
         }
 
+        public TimeSpan CalculateUntilStart()
+        {
+            return Start - DateTime.UtcNow;
+        }
+
         public TimeSpan CalculateUntilRoundFinish()
         {
             return Start.AddSeconds(roundDurationInSeconds) - DateTime.UtcNow;
@@ -30,6 +35,11 @@
         public TimeSpan CalculateUntilRaceStartWitBetLock()
         {
             return RaceStartWitBetLockDateTime - DateTime.UtcNow;
+        }
+
+        public bool IsStartInPast()
+        {
+            return this.Start <= DateTime.UtcNow;
         }
 
         public static DateTime CalculateRoundRaceStartWithLock(DateTime roundStart)

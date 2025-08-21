@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PlayNirvana.CommonModule.Interfaces;
@@ -19,7 +20,10 @@ namespace PlayNirvana.TicketModule
 
             services.AddDbContext<TicketModuleDbContext>(options =>
             {
-                options.UseSqlServer(configuration.GetConnectionString("PlayNirvanaConnectionString"));
+                options.UseSqlServer(configuration.GetConnectionString("PlayNirvanaConnectionString"), o =>
+                {
+                    o.MigrationsHistoryTable(HistoryRepository.DefaultTableName, TicketModuleDbContext.schema);
+                });
             });
 
             services.AddScoped(typeof(ITicketModuleRepository<>), typeof(TicketModuleRepository<>));

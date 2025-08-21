@@ -65,6 +65,7 @@ namespace PlayNirvana.TicketModule.Application.Services
                 throw new TicketValidationException(validationResults.Select(x => new TicketValidationException(x.Message)));
             }
         }
+
         public void UpdateSuccessTicketsToWon(int roundId)
         {
             var wonTicketsInCurrentRoundQuery = ticketRepository.Query()

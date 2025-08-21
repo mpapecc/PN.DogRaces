@@ -6,7 +6,9 @@ namespace PlayNirvana.TicketModule.Infrastructure.DataContext
 {
     public class TicketModuleDbContext : PlayNirvanaDbContext
     {
-        public TicketModuleDbContext(DbContextOptions<TicketModuleDbContext> options) : base(options)
+        public static readonly string schema = "tickets";
+        public TicketModuleDbContext(DbContextOptions<TicketModuleDbContext> options) 
+            : base(options, schema : schema)
         {
         }
 

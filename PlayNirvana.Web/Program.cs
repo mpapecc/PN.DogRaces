@@ -8,6 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging
     .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
 
+builder.Services.Configure<HostOptions>(hostOptions =>
+{
+    hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+});
+
 //builder.Services.AddControllers().AddApplicationPart(Assembly.Load(new AssemblyName("PlayNirvana.RoundModule")));
 builder.Services.AddControllers().AddApplicationPart(Assembly.Load(new AssemblyName("PlayNirvana.TicketModule")));
 builder.Services.RegisterCommonModule();
@@ -30,7 +35,6 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 app.RegisterRoundApps();
-//app.MapHub<GameHub>("/gamehub");
 app.MapControllers();
 
 app.Run();

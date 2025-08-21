@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PlayNirvana.CommonModule.Interfaces;
@@ -20,7 +21,10 @@ namespace PlayNirvana.RoundModule
         {
             services.AddDbContext<RoundModuleDbContext>(options =>
             {
-                options.UseSqlServer(configuration.GetConnectionString("PlayNirvanaConnectionString"));
+                options.UseSqlServer(configuration.GetConnectionString("PlayNirvanaConnectionString"), o =>
+                {
+                    o.MigrationsHistoryTable(HistoryRepository.DefaultTableName, RoundModuleDbContext.schema);
+                });
             });
 
             services.AddScoped(typeof(IRoundModuleRepository<>), typeof(RoundModuleRepository<>));
@@ -33,7 +37,7 @@ namespace PlayNirvana.RoundModule
 
 
             services.AddHostedService<RoundManagerService>();
-            services.AddHostedService<RoundManagerService>();
+            services.AddHostedService<RoundsGeneratorService>();
 
             return services;
         }

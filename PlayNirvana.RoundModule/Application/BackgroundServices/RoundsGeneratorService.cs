@@ -33,6 +33,7 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             {
                 //raise critical error and notify since this is crutial service for app
                 logger.LogCritical(e.Message);
+                Environment.Exit(1);
             }
 
             return Task.CompletedTask;

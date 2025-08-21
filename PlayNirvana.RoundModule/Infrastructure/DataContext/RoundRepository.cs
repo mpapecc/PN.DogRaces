@@ -16,7 +16,7 @@ namespace PlayNirvana.RoundModule.Infrastructure.DataContext
 
         public void Sp_TranslateActiveAndIdleRoundsStartInFuture()
         {
-            context.Database.ExecuteSql($"EXECUTE dbo.sproc_TranslateActiveAndIdleRoundsStartInFuture");
+            context.Database.ExecuteSql($"EXECUTE rounds.sproc_TranslateActiveAndIdleRoundsStartInFuture");
         }
 
         public int GetIdleRoundsCount()

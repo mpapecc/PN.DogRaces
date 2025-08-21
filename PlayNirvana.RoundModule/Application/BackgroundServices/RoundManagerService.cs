@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using PlayNirvana.CommonModule.Models;
 using PlayNirvana.RoundModule.Application.Models;
 using PlayNirvana.RoundModule.Application.Services;
-using PlayNirvana.RoundModule.Domain.Entites;
+using PlayNirvana.RoundModule.Common.Exceptions;
 using PlayNirvana.RoundModule.Integrations;
 using PlayNirvana.RoundModule.Presentation.RoundHub;
 
@@ -15,7 +15,7 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
     {
         private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly ILogger<RoundManagerService> logger;
-        private RoundModel? roundModel;
+        private RoundModel roundModel;
 
         public RoundManagerService(
             IServiceScopeFactory serviceScopeFactory,
@@ -30,12 +30,26 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             using IServiceScope scope = serviceScopeFactory.CreateScope();
             var roundService = scope.ServiceProvider.GetRequiredService<RoundService>();
 
-            roundModel = roundService.GetNextActiveRoundModel();
-
-            if (roundModel.Start <= DateTime.UtcNow)
+            try
             {
-                roundService.TranslateActiveAndIdleRoundsStartInFuture();
                 roundModel = roundService.GetNextActiveRoundModel();
+
+                if (roundModel.IsStartInPast())
+                {
+                    roundService.TranslateActiveAndIdleRoundsStartInFuture();
+                    roundModel = roundService.GetNextActiveRoundModel();
+                }
+            }
+            catch (NoActiveRoundsException e)
+            {
+                this.logger.LogWarning(e.Message);
+
+                roundService.GenerateRoundIfNeeded();
+                roundModel = roundService.GetNextActiveRoundModel();
+            }
+            catch (Exception e)
+            {
+                this.logger.LogError("Unandled exception {error}",e);
             }
 
             return base.StartAsync(cancellationToken);
@@ -43,18 +57,12 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
 
         protected override async Task ExecuteAsync(CancellationToken ct)
         {
-            if (roundModel == null)
-            {
-                this.logger.LogCritical("There is not round for process!");
-                return;
-            }
-
-            await Task.Delay(roundModel.Start - DateTime.UtcNow);
-            using PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(120));
-            await ManageRoundAsync(true, ct);
-
             try
             {
+                await Task.Delay(roundModel.CalculateUntilStart());
+                using PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(120));
+                await ManageRoundAsync(true, ct);
+
                 while (await timer.WaitForNextTickAsync(ct))
                 {
                     await ManageRoundAsync(false, ct);
@@ -62,17 +70,14 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             }
             catch (Exception e)
             {
-                logger.LogError(e.Message);
+                this.logger.LogError("Unandled exception {error}", e);
+                this.logger.LogError("Starting {service} again!", nameof(RoundManagerService));
+                await StartAsync(ct);
             }
         }
 
         private async Task ManageRoundAsync(bool isFirstExecution, CancellationToken ct)
         {
-            if (roundModel == null)
-            {
-                this.logger.LogCritical("There is not round for process!");
-                return;
-            }
 
             using IServiceScope scope = serviceScopeFactory.CreateScope();
             var roundService = scope.ServiceProvider.GetRequiredService<RoundService>();
