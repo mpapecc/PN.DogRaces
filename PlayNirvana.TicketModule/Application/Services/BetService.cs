@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PlayNirvana.CommonModule.Services;
 using PlayNirvana.TicketModule.Application.Repositories;
 using PlayNirvana.TicketModule.Common.Enums;
 using PlayNirvana.TicketModule.Domain.Entites;
@@ -11,99 +12,93 @@ namespace PlayNirvana.TicketModule.Application.Services
         private readonly ITicketModuleRepository<DogPosition> dogPositionRepository;
         private readonly ITicketModuleRepository<RaceDogResult> raceDogResultRepository;
         private readonly TicketService ticketService;
+        private readonly IExecuteUpdateOrDeleteBatcher executeUpdateOrDeleteBatcher;
 
         public BetService(
             ITicketModuleRepository<Bet> betRepository,
             ITicketModuleRepository<DogPosition> dogPositionRepository,
             ITicketModuleRepository<RaceDogResult> raceDogResultRepository,
-            TicketService ticketService)
+            TicketService ticketService,
+            IExecuteUpdateOrDeleteBatcher executeUpdateOrDeleteBatcher)
         {
             this.betRepository = betRepository;
             this.ticketService = ticketService;
             this.dogPositionRepository = dogPositionRepository;
             this.raceDogResultRepository = raceDogResultRepository;
+            this.executeUpdateOrDeleteBatcher = executeUpdateOrDeleteBatcher;
         }
 
         public void ProcessRoundBets(int roundId)
         {
-            var positionBetsUpdate = ProcessPositionBetTypeOnDbAsync(roundId);
-            var rangeBetsUpdate = ProcessRangeBetTypeOnDbAsync(roundId);
-
-            Task.WaitAll(positionBetsUpdate, rangeBetsUpdate);
+            var batchSize = 500;
+            UpdatePositionBetTypeOnDbBatch(roundId, batchSize);
+            UpdateRangeBetTypeOnDbBatch(roundId, batchSize);
 
             //process all sucess tickets THIS CAN BE MOVED TO TICKET SERVICE ???
 
-            this.ticketService.UpdateSuccessTicketsToWon(roundId);
-            //this.ticketService.UpdateSuccessTicketsToLost(roundBetsProcessData.RoundId);
+            this.ticketService.UpdateSuccessTicketsToWon(roundId, batchSize);
+            this.ticketService.UpdateSuccessTicketsToLost(roundId, batchSize);
         }
 
-        //private void ProcessBet(Bet bet, IEnumerable<RaceDogResultModel> raceDogsResult)
-        //{
-        //    if (bet.BetType == BetType.Position)
-        //    {
-        //        ProcessPositionBetType(bet, raceDogsResult);
-        //    }
-        //}
-
-        //private void ProcessPositionBetType(Bet bet, IEnumerable<RaceDogResultModel> raceDogsResult)
-        //{
-        //    bool isBetWining(Bet bet, IEnumerable<RaceDogResultModel> raceDogsResult)
-        //    {
-        //        return bet.DogPositions.All(x => raceDogsResult.ElementAt(x.Position).RacingDogId == x.RacingDogId);
-        //    }
-
-        //    bet.BetStatus = isBetWining(bet, raceDogsResult) ? BetStatus.Won : BetStatus.Lost;
-        //}
-        
-        private Task ProcessPositionBetTypeOnDbAsync(int roundId)
+        private void UpdatePositionBetTypeOnDbBatch(int roundId, int batchsize)
         {
-            return this.betRepository.Query()
-                .Where(b => b.RoundId == roundId && b.BetType == BetType.Position)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(
-                        b => b.BetStatus,
-                        b =>
-                            (
-                                dogPositionRepository.Query().Any(dp => dp.BetId == b.Id)
-                                &&
-                                // and there does NOT exist a DogPosition with no matching RaceDogResult
-                                !dogPositionRepository.Query()
-                                    .Where(dp => dp.BetId == b.Id)
-                                    .Any(dp =>
-                                        !raceDogResultRepository.Query().Any(r =>
-                                            r.RoundId == b.RoundId &&
-                                            r.RacingDogId == dp.RacingDogId &&
-                                            r.Place == dp.Position
-                                        )
-                                    )
+            int ProcessPositionBetTypeOnDb(IQueryable<Bet> query)
+            {
+                return query.ExecuteUpdate(x => x.SetProperty(x => x.BetStatus, b =>
+                    dogPositionRepository.Query().Any(dp => dp.BetId == b.Id)
+                    &&
+                    !dogPositionRepository.Query()
+                        .Where(dp => dp.BetId == b.Id)
+                        .Any(dp =>
+                            !raceDogResultRepository.Query().Any(r =>
+                                r.RoundId == b.RoundId &&
+                                r.RacingDogId == dp.RacingDogId &&
+                                r.Place == dp.Position
                             )
-                            ? BetStatus.Won
-                            : BetStatus.Lost
-                    )
+                        )
+                    ? BetStatus.Won
+                    : BetStatus.Lost));
+            }
+
+            var query = this.betRepository.Query()
+                .Where(b => b.RoundId == roundId && b.BetStatus == BetStatus.Pending && b.BetType == BetType.Position);
+
+            this.executeUpdateOrDeleteBatcher.ExecuteUpdateOrDeleteInBatch(
+                batchsize,
+                query,
+                ProcessPositionBetTypeOnDb
                 );
         }
 
-        private Task ProcessRangeBetTypeOnDbAsync(int roundId)
+        private void UpdateRangeBetTypeOnDbBatch(int roundId, int batchsize)
         {
-            return this.betRepository.Query()
-            .Where(b => b.RoundId == roundId && b.BetType == BetType.Range)
-            .ExecuteUpdateAsync(setters => setters
-                .SetProperty(
-                    b => b.BetStatus,
-                    b =>
-                        dogPositionRepository.Query()
-                            .Where(dp => dp.BetId == b.Id)
-                            .Any(dp =>
-                                raceDogResultRepository.Query().Any(r =>
-                                    r.RoundId == b.RoundId &&
-                                    r.RacingDogId == dp.RacingDogId &&
-                                    r.Place == dp.Position
-                                )
+            int ProcessRangenBetTypeOnDb(IQueryable<Bet> query)
+            {
+                return query.ExecuteUpdate(x => x.SetProperty(x => x.BetStatus, b =>
+                    dogPositionRepository.Query().Any(dp => dp.BetId == b.Id)
+                    &&
+                    dogPositionRepository.Query()
+                        .Where(dp => dp.BetId == b.Id)
+                        .Any(dp =>
+                            raceDogResultRepository.Query().Any(r =>
+                                r.RoundId == b.RoundId &&
+                                r.RacingDogId == dp.RacingDogId &&
+                                r.Place == dp.Position
                             )
-                        ? BetStatus.Won
-                        : BetStatus.Lost
-                )
-    );
+                        )
+                    ? BetStatus.Won
+                    : BetStatus.Lost));
+            }
+
+            var query = this.betRepository.Query()
+                .Where(b => b.RoundId == roundId && b.BetStatus == BetStatus.Pending && b.BetType == BetType.Range);
+
+            this.executeUpdateOrDeleteBatcher.ExecuteUpdateOrDeleteInBatch(
+                batchsize,
+                query,
+                ProcessRangenBetTypeOnDb
+                );
+
         }
     }
 }

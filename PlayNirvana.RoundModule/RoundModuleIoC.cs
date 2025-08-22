@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using PlayNirvana.CommonModule.DataContext;
 using PlayNirvana.CommonModule.Interfaces;
 using PlayNirvana.RoundModule.Application.BackgroundServices;
 using PlayNirvana.RoundModule.Application.Repositories;
@@ -30,7 +31,7 @@ namespace PlayNirvana.RoundModule
             {
                 options.UseSqlServer(configuration.GetConnectionString("PlayNirvanaConnectionString"), o =>
                 {
-                    o.MigrationsHistoryTable(HistoryRepository.DefaultTableName, RoundModuleDbContext.schema);
+                    o.MigrationsHistoryTable(HistoryRepository.DefaultTableName, DbSchema.Rounds);
                 });
             });
 

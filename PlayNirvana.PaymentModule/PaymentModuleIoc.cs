@@ -9,7 +9,7 @@ namespace PlayNirvana.PaymentModule
     {
         public static IServiceCollection RegisterPaymentModule(this IServiceCollection services)
         {
-            services.AddScoped<PaymentService>();
+            services.AddSingleton<PaymentService>();
             services.AddScoped<IPaymentModuleExternal, PaymentModuleExternal>();
 
             return services;

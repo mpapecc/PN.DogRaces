@@ -6,8 +6,8 @@ using PlayNirvana.PaymentModule;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//builder.Logging
-//    .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
+builder.Logging
+    .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
 
 builder.Services.RegisterCommonModule();
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using PlayNirvana.CommonModule.Services;
 
 namespace PlayNirvana.CommonModule
 {
@@ -6,6 +7,7 @@ namespace PlayNirvana.CommonModule
     {
         public static IServiceCollection RegisterCommonModule(this IServiceCollection services)
         {
+            services.AddScoped<IExecuteUpdateOrDeleteBatcher, ExecuteUpdateOrDeleteBatcher>();
             return services;
         }
     }

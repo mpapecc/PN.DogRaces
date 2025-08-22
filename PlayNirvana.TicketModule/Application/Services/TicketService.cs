@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PlayNirvana.CommonModule.Services;
 using PlayNirvana.TicketModule.Application.Models;
 using PlayNirvana.TicketModule.Application.Repositories;
 using PlayNirvana.TicketModule.Application.Validators;
@@ -16,17 +17,20 @@ namespace PlayNirvana.TicketModule.Application.Services
         private readonly TicketRoundsValidator ticketRoundsValidator;
         private readonly ITicketModuleRepository<Ticket> ticketRepository;
         private readonly IPaymentModuleIntegration paymentModuleIntegration;
+        private readonly IExecuteUpdateOrDeleteBatcher executeUpdateOrDeleteBatcher;
 
         public TicketService(
             Validator<Ticket> betValidators,
             TicketRoundsValidator ticketRoundsValidator,
             ITicketModuleRepository<Ticket> ticketRepository,
-            IPaymentModuleIntegration paymentModuleIntegration)
+            IPaymentModuleIntegration paymentModuleIntegration,
+            IExecuteUpdateOrDeleteBatcher executeUpdateOrDeleteBatcher)
         {
             ticketValidator = betValidators;
             this.ticketRoundsValidator = ticketRoundsValidator;
             this.ticketRepository = ticketRepository;
             this.paymentModuleIntegration = paymentModuleIntegration;
+            this.executeUpdateOrDeleteBatcher = executeUpdateOrDeleteBatcher;
         }
 
         public void ValidateAndCreateTicket(CreateTicketCommand creatTicketCommand)
@@ -48,11 +52,10 @@ namespace PlayNirvana.TicketModule.Application.Services
 
             ticket.TicketStatus = TicketStatus.Success;
             ticket.PaymentReservationId = reservationId;
+
             this.ticketRepository.Insert(ticket);
             this.ticketRepository.Commit();
         }
-
-        //FOR THIS METHODS WE SHOULD CHECK IF BETS ARE SYSTEMATIC E.G. 2 OUT OF 3 FOR WINNING
 
         private void ValidateTicket(Ticket ticket)
         {
@@ -66,33 +69,39 @@ namespace PlayNirvana.TicketModule.Application.Services
             }
         }
 
-        public void UpdateSuccessTicketsToWon(int roundId)
+        public void UpdateSuccessTicketsToWon(int roundId, int batchSize)
         {
             var wonTicketsInCurrentRoundQuery = ticketRepository.Query()
                     .Where(x => x.TicketStatus == TicketStatus.Success)
                     .Where(x => x.Bets.Any(x => x.RoundId == roundId) && x.Bets.All(x => x.BetStatus == BetStatus.Won));
 
-            wonTicketsInCurrentRoundQuery
-                .ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Won));
-            
-            //since we have in-memory wallet for one player we are doing it all in-memory
-            //for multi user scenarion with proper payment service we can also move this processing to db
+            this.executeUpdateOrDeleteBatcher.ExecuteUpdateOrDeleteInBatch(
+                batchSize,
+                wonTicketsInCurrentRoundQuery,
+                t => t.ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Won))
+                );
+
             var wonTicketsPaymentReservationsIds = wonTicketsInCurrentRoundQuery.Select(x => x.PaymentReservationId).ToList();
 
+            //since we have in-memory wallet for one player we are doing it all in-memory
+            //for multi user scenarion with proper payment service we can also move this processing to db
             wonTicketsPaymentReservationsIds.ForEach(x => this.paymentModuleIntegration.ProcessReservation(x, isWinningTicket: true));
         }
-        public void UpdateSuccessTicketsToLost(int roundId)
+        public void UpdateSuccessTicketsToLost(int roundId, int batchSize)
         {
             var lostTicketsInCurrentRoundQuery = ticketRepository.Query()
                 .Where(x => x.TicketStatus == TicketStatus.Success)
                 .Where(x => x.Bets.Any(x => x.RoundId == roundId) && x.Bets.Any(x => x.BetStatus == BetStatus.Lost));
 
-            lostTicketsInCurrentRoundQuery
-                .ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Lost));
+            this.executeUpdateOrDeleteBatcher.ExecuteUpdateOrDeleteInBatch(
+                batchSize,
+                lostTicketsInCurrentRoundQuery,
+                t => t.ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Lost))
+                );
 
-            //same comment as above
             var lostTicketsPaymentReservationsIds = lostTicketsInCurrentRoundQuery.Select(x => x.PaymentReservationId).ToList();
 
+            //same comment as above
             lostTicketsPaymentReservationsIds.ForEach(x => this.paymentModuleIntegration.ProcessReservation(x, isWinningTicket: false));
         }
     }

@@ -14,7 +14,8 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
     {
         private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly ILogger<RoundManagerService> logger;
-        private RoundDto roundModel;
+        private RoundDto roundModel { get; set; }
+        private RoundDto nextRoundModel { get; set; }
 
         public RoundManagerService(
             IServiceScopeFactory serviceScopeFactory,
@@ -49,6 +50,7 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             catch (Exception e)
             {
                 this.logger.LogError("Unandled exception {error}",e);
+                throw;
             }
 
             return base.StartAsync(cancellationToken);
@@ -86,37 +88,38 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             var roundId = roundModel.Id;
 
             this.logger.LogInformation($" {DateTime.UtcNow} : Round {roundId} started");
-            await roundHub.Clients.All.RoundStarted();
+            roundHub.Clients.All.RoundStarted();
 
             var raceStartDelay = Task.Delay(roundModel.CalculateUntilRaceStartWitBetLock());
 
-            IEnumerable<RaceDogResultDto> roundOutcome = await raceStartDelay.ContinueWith((task) =>
+            await raceStartDelay.ContinueWith((task) =>
             {
                 this.logger.LogInformation($" {DateTime.UtcNow} : Round {roundId} locked");
 
-                roundService.LockRoundAsync(roundId);
-                roundOutcome = roundService.GenerateRoundOutcome(roundId);
-
-                this.logger.LogInformation($" {DateTime.UtcNow} : Race for round {roundId} started");
+                roundService.LockRound(roundId);
 
                 roundHub.Clients.All.RaceStartWithBetLock(roundId);
 
+                var outcome = roundService.GenerateRoundOutcome(roundId);
+
+                this.logger.LogInformation($" {DateTime.UtcNow} : Race for round {roundId} started");
                 //this can be done async since its long runnig process and it does not depends on anything
                 //or even better offload it to hangfire or something
                 ticketModuleIntegration.ProcessRoundBets(roundId);
 
-                return roundOutcome;
+                return outcome;
             }, ct);
 
             var roundFinishDelay = Task.Delay(roundModel.CalculateUntilRoundFinish());
-            this.logger.LogInformation($" {DateTime.UtcNow} : Round {roundId} finished");
 
-            await roundFinishDelay.ContinueWith(async task =>
+            await roundFinishDelay.ContinueWith(task =>
             {
-                await roundService.FinishRoundAsync(roundModel.Id);
-                await roundHub.Clients.All.RoundFinished(roundOutcome);
-                roundModel = roundService.GetNextActiveRoundModel();
-            });
+                this.logger.LogInformation($" {DateTime.UtcNow} : Race for round {roundId} finished");
+                roundService.FinishRound(roundModel.Id);
+                this.logger.LogInformation($" {DateTime.UtcNow} : Round {roundId} finished");
+            },ct);
+
+            roundModel = roundService.GetNextActiveRoundModel();
         }
     }
 }

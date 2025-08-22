@@ -126,19 +126,19 @@ namespace PlayNirvana.RoundModule.Application.Services
                                 .ExecuteUpdateAsync(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Active));
         }
 
-        public Task LockRoundAsync(int roundId)
+        public void LockRound(int roundId)
         {
-            return roundRepository.Query()
+            roundRepository.Query()
                 .Where(x => x.Id == roundId).
-                ExecuteUpdateAsync(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Locked));
+                ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Locked));
 
         }
 
-        public Task FinishRoundAsync(int roundId)
+        public void FinishRound(int roundId)
         {
-            return roundRepository.Query()
+            roundRepository.Query()
                 .Where(x => x.Id == roundId)
-                .ExecuteUpdateAsync(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Finished));
+                .ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Finished));
         }
 
         public IEnumerable<RaceDogResultDto> GenerateRoundOutcome(int roundId)

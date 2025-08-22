@@ -6,15 +6,17 @@ namespace PlayNirvana.TicketModule.Infrastructure.DataContext
 {
     public class TicketModuleDbContext : PlayNirvanaDbContext
     {
-        public static readonly string schema = "tickets";
         public TicketModuleDbContext(DbContextOptions<TicketModuleDbContext> options) 
-            : base(options, schema : schema)
+            : base(options, schema : DbSchema.Tickets)
         {
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<RaceDogResult>().ToTable(x => x.ExcludeFromMigrations()) ;
+            modelBuilder.Entity<RaceDogResult>()
+                .ToTable(x => x.ExcludeFromMigrations())
+                .Metadata.SetSchema(DbSchema.Rounds);
+
             base.OnModelCreating(modelBuilder);
         }
 
