@@ -12,8 +12,15 @@ namespace PlayNirvana.TicketModule.Infrastructure.DataContext
         {
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<RaceDogResult>().ToTable(x => x.ExcludeFromMigrations()) ;
+            base.OnModelCreating(modelBuilder);
+        }
+
         DbSet<Ticket> Tickets { get; set; }
         DbSet<Bet> Bets { get; set; }
         DbSet<DogPosition> DogPositions { get; set; }
+        DbSet<RaceDogResult> RaceDogResults { get; set; }
     }
 }

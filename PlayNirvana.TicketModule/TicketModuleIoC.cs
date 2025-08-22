@@ -13,11 +13,10 @@ using PlayNirvana.TicketModule.Integrations;
 
 namespace PlayNirvana.TicketModule
 {
-    public static class TicketIoC
+    public static class TicketModuleIoC
     {
         public static IServiceCollection RegisterTicketModule(this IServiceCollection services, IConfigurationManager configuration)
         {
-
             services.AddDbContext<TicketModuleDbContext>(options =>
             {
                 options.UseSqlServer(configuration.GetConnectionString("PlayNirvanaConnectionString"), o =>
@@ -29,11 +28,15 @@ namespace PlayNirvana.TicketModule
             services.AddScoped(typeof(ITicketModuleRepository<>), typeof(TicketModuleRepository<>));
 
             services.AddScoped<IRoundModuleIntegration, RoundModuleIntegration>();
+
             services.AddScoped<ITicketModuleExternal, TicketModuleExternal>();
+            services.AddScoped<IPaymentModuleIntegration, PaymentModuleIntegration>();
+
 
             services.AddScoped<TicketService>();
             services.AddScoped<BetService>();
-            services.AddValidators(typeof(TicketIoC).Assembly);
+
+            services.AddValidators(typeof(TicketModuleIoC).Assembly);
             return services;
         }
 

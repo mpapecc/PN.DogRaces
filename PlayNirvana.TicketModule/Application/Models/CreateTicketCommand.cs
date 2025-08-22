@@ -3,9 +3,8 @@ using PlayNirvana.TicketModule.Domain.Entites;
 
 namespace PlayNirvana.TicketModule.Application.Models
 {
-    public class CreateTicketModel
+    public class CreateTicketCommand
     {
-        public int TicketId { get; set; }
         public double BetAmount { get; set; }
         public IEnumerable<BetModel> Bets { get; set; }
 

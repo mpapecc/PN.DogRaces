@@ -1,12 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using PlayNirvana.CommonModule.Interfaces;
-using PlayNirvana.CommonModule.Models;
 
 namespace PlayNirvana.RoundModule.Integrations
 {
     public interface ITicketModuleIntegration
     {
-        void ProcessRoundBets(RoundBetsProcessData roundBetsProcessData);
+        void ProcessRoundBets(int roundId);
     }
 
     public class TicketModuleIntegration : ITicketModuleIntegration
@@ -20,12 +19,12 @@ namespace PlayNirvana.RoundModule.Integrations
             this.logger = logger;
         }
 
-        public void ProcessRoundBets(RoundBetsProcessData roundBetsProcessData)
+        public void ProcessRoundBets(int roundId)
         {
-            this.logger.LogInformation($" {DateTime.UtcNow} : Bets round {roundBetsProcessData.RoundId} proccess started");
+            this.logger.LogInformation($" {DateTime.UtcNow} : Bets round {roundId} proccess started");
 
-            this.ticketModuleExternal.ProcessRoundBets(roundBetsProcessData);
-            this.logger.LogInformation($" {DateTime.UtcNow} : Bets round {roundBetsProcessData.RoundId} proccess finished");
+            this.ticketModuleExternal.ProcessRoundBets(roundId);
+            this.logger.LogInformation($" {DateTime.UtcNow} : Bets round {roundId} proccess finished");
 
         }
     }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PlayNirvana.TicketModule.Infrastructure.DataContext;
 
@@ -11,9 +12,11 @@ using PlayNirvana.TicketModule.Infrastructure.DataContext;
 namespace PlayNirvana.TicketModule.Infrastructure.DataContext.Migrations
 {
     [DbContext(typeof(TicketModuleDbContext))]
-    partial class TicketModuleDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250821213428_PaymentReservationIdOnTicket")]
+    partial class PaymentReservationIdOnTicket
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

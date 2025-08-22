@@ -6,6 +6,7 @@ using PlayNirvana.TicketModule.Application.Validators.TicketValidators;
 using PlayNirvana.TicketModule.Common.Enums;
 using PlayNirvana.TicketModule.Common.Exceptions;
 using PlayNirvana.TicketModule.Domain.Entites;
+using PlayNirvana.TicketModule.Integrations;
 
 namespace PlayNirvana.TicketModule.Application.Services
 {
@@ -14,42 +15,41 @@ namespace PlayNirvana.TicketModule.Application.Services
         private readonly Validator<Ticket> ticketValidator;
         private readonly TicketRoundsValidator ticketRoundsValidator;
         private readonly ITicketModuleRepository<Ticket> ticketRepository;
-        //private readonly WalletService walletService;
+        private readonly IPaymentModuleIntegration paymentModuleIntegration;
 
         public TicketService(
             Validator<Ticket> betValidators,
             TicketRoundsValidator ticketRoundsValidator,
-            ITicketModuleRepository<Ticket> ticketRepository)
+            ITicketModuleRepository<Ticket> ticketRepository,
+            IPaymentModuleIntegration paymentModuleIntegration)
         {
             ticketValidator = betValidators;
             this.ticketRoundsValidator = ticketRoundsValidator;
             this.ticketRepository = ticketRepository;
-            //this.walletService = walletService;
+            this.paymentModuleIntegration = paymentModuleIntegration;
         }
 
-        public void ValidateAndCreateTicket(CreateTicketModel creatTicketModel)
+        public void ValidateAndCreateTicket(CreateTicketCommand creatTicketCommand)
         {
-            var ticket = creatTicketModel.ToTicket();
+            var ticket = creatTicketCommand.ToTicket();
 
             ValidateTicket(ticket);
 
-            //make reservation in wallet
+            var reservationId = this.paymentModuleIntegration.ReserveAmount(creatTicketCommand.BetAmount);
 
-            //walletService.ReserveAmonunt(creatTicketModel.TicketId, creatTicketModel.BetAmount);
-
-            var ticketRoundsValidatorResult = ticketRoundsValidator.Validate(ticket);
+            var ticketRoundsValidatorResult = this.ticketRoundsValidator.Validate(ticket);
 
             if (!ticketRoundsValidatorResult.IsSucess)
             {
-                //cancle reservation in wallet
-                //walletService.RemoveReservation(creatTicketModel.TicketId);
+                this.paymentModuleIntegration.RemoveReservation(reservationId);
 
                 throw new TicketValidationException(ticketRoundsValidatorResult.Message);
             }
 
             ticket.TicketStatus = TicketStatus.Success;
-            ticketRepository.Insert(ticket);
-            ticketRepository.Commit();
+            ticket.PaymentReservationId = reservationId;
+            this.ticketRepository.Insert(ticket);
+            this.ticketRepository.Commit();
         }
 
         //FOR THIS METHODS WE SHOULD CHECK IF BETS ARE SYSTEMATIC E.G. 2 OUT OF 3 FOR WINNING
@@ -72,14 +72,14 @@ namespace PlayNirvana.TicketModule.Application.Services
                     .Where(x => x.TicketStatus == TicketStatus.Success)
                     .Where(x => x.Bets.Any(x => x.RoundId == roundId) && x.Bets.All(x => x.BetStatus == BetStatus.Won));
 
-            var aaa = wonTicketsInCurrentRoundQuery.ToQueryString();
-
-            //handle wallet actions
-
-            //this.walletService.ProcessReservation(12, TicketStatus.Success);
-
             wonTicketsInCurrentRoundQuery
-                    .ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Won));
+                .ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Won));
+            
+            //since we have in-memory wallet for one player we are doing it all in-memory
+            //for multi user scenarion with proper payment service we can also move this processing to db
+            var wonTicketsPaymentReservationsIds = wonTicketsInCurrentRoundQuery.Select(x => x.PaymentReservationId).ToList();
+
+            wonTicketsPaymentReservationsIds.ForEach(x => this.paymentModuleIntegration.ProcessReservation(x, isWinningTicket: true));
         }
         public void UpdateSuccessTicketsToLost(int roundId)
         {
@@ -87,11 +87,13 @@ namespace PlayNirvana.TicketModule.Application.Services
                 .Where(x => x.TicketStatus == TicketStatus.Success)
                 .Where(x => x.Bets.Any(x => x.RoundId == roundId) && x.Bets.Any(x => x.BetStatus == BetStatus.Lost));
 
-            //handle wallet actions
-            //this.walletService.ProcessReservation(12, TicketStatus.Lost);
-
             lostTicketsInCurrentRoundQuery
-                    .ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Lost));
+                .ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Lost));
+
+            //same comment as above
+            var lostTicketsPaymentReservationsIds = lostTicketsInCurrentRoundQuery.Select(x => x.PaymentReservationId).ToList();
+
+            lostTicketsPaymentReservationsIds.ForEach(x => this.paymentModuleIntegration.ProcessReservation(x, isWinningTicket: false));
         }
     }
 }

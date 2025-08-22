@@ -1,5 +1,4 @@
 ﻿using PlayNirvana.CommonModule.Interfaces;
-using PlayNirvana.CommonModule.Models;
 using PlayNirvana.TicketModule.Application.Services;
 
 namespace PlayNirvana.TicketModule.External
@@ -13,9 +12,9 @@ namespace PlayNirvana.TicketModule.External
             this.betService = betService;
         }
 
-        public void ProcessRoundBets(RoundBetsProcessData roundBetsProcessData)
+        public void ProcessRoundBets(int roundId)
         {
-            this.betService.ProcessRoundBets(roundBetsProcessData);
+            this.betService.ProcessRoundBets(roundId);
         }
     }
 }

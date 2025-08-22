@@ -9,5 +9,6 @@ namespace PlayNirvana.TicketModule.Domain.Entites
         public double BetAmount { get; set; }
         public double WinAmount { get; set; }
         public TicketStatus TicketStatus { get; set; } = TicketStatus.Pending;
+        public Guid PaymentReservationId { get; set; }
     }
 }

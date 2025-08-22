@@ -1,25 +1,20 @@
-using System.Reflection;
 using PlayNirvana.Web;
 using PlayNirvana.CommonModule;
 using PlayNirvana.RoundModule;
 using PlayNirvana.TicketModule;
+using PlayNirvana.PaymentModule;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Logging
-    .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
 
-builder.Services.Configure<HostOptions>(hostOptions =>
-{
-    hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
-});
+//builder.Logging
+//    .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
 
-//builder.Services.AddControllers().AddApplicationPart(Assembly.Load(new AssemblyName("PlayNirvana.RoundModule")));
-builder.Services.AddControllers().AddApplicationPart(Assembly.Load(new AssemblyName("PlayNirvana.TicketModule")));
 builder.Services.RegisterCommonModule();
 
 builder.Services.RegisterWeb();
 builder.Services.RegisterRoundModule(builder.Configuration);
 builder.Services.RegisterTicketModule(builder.Configuration);
+builder.Services.RegisterPaymentModule();
 
 var app = builder.Build();
 app.UseExceptionHandler();

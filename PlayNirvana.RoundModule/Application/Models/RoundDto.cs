@@ -1,6 +1,6 @@
 ﻿namespace PlayNirvana.RoundModule.Application.Models
 {
-    public class RoundModel
+    public class RoundDto
     {
         public static readonly int roundDurationInSeconds = 120;
         public static readonly int betLockBeforeStartInSeconds = 5;
@@ -10,7 +10,7 @@
         public DateTime Start { get; init; }
         public DateTime RaceStartWitBetLockDateTime { get; init; }
 
-        public RoundModel(int id, DateTime start)
+        public RoundDto(int id, DateTime start)
         {
             Id = id;
             Start = start;
@@ -50,5 +50,5 @@
         {
             return roundDurationInSeconds - (raceDurationInSeconds + betLockBeforeStartInSeconds);
         }
-    };
+    }
 }

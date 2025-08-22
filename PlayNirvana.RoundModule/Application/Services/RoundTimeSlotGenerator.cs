@@ -12,7 +12,6 @@
             if (utcNow.Kind != DateTimeKind.Utc)
                 utcNow = DateTime.SpecifyKind(utcNow, DateTimeKind.Utc); // assumes input is already UTC
 
-            // round up to the next whole minute, then bump to next even if needed
             var next = new DateTime(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, utcNow.Minute, 0, DateTimeKind.Utc)
                        .AddMinutes(1);
 

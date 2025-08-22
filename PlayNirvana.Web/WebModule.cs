@@ -4,8 +4,9 @@
     {
         public static IServiceCollection RegisterWeb(this IServiceCollection services)
         {
-            services.AddSignalR();
             services.AddControllers();
+            services.AddSignalR();
+
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
 

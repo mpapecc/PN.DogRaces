@@ -1,8 +1,8 @@
-﻿namespace PlayNirvana.CommonModule.Models
+﻿namespace PlayNirvana.RoundModule.Application.Models
 {
-    public class RaceDogResultModel
+    public class RaceDogResultDto
     {
-        public RaceDogResultModel(int racingDogId, int place)
+        public RaceDogResultDto(int racingDogId, int place)
         {
             RacingDogId = racingDogId;
             Place = place;

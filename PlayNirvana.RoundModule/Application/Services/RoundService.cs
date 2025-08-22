@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PlayNirvana.CommonModule.Models;
 using PlayNirvana.RoundModule.Application.Models;
 using PlayNirvana.RoundModule.Application.Repositories;
 using PlayNirvana.RoundModule.Common.Enums;
@@ -68,7 +67,7 @@ namespace PlayNirvana.RoundModule.Application.Services
             var rounds = Enumerable.Range(0, newRoundsThreshold)
                 .Select(x => new Round()
                 {
-                    Start = referentDateTime.Value.AddSeconds(x * RoundModel.roundDurationInSeconds),
+                    Start = referentDateTime.Value.AddSeconds(x * RoundDto.roundDurationInSeconds),
                     RoundStatus = RoundStatus.Idle,
                 }).ToList();
 
@@ -89,10 +88,10 @@ namespace PlayNirvana.RoundModule.Application.Services
             return rounds;
         }
 
-        public RoundModel GetNextActiveRoundModel()
+        public RoundDto GetNextActiveRoundModel()
         {
             var nextRoundStartData = roundRepository.GetNextRoundForExecutionQuery()
-                .Select(x => new RoundModel(x.Id, x.Start))
+                .Select(x => new RoundDto(x.Id, x.Start))
                 .FirstOrDefault();
 
             if (nextRoundStartData?.Start == null)
@@ -105,10 +104,10 @@ namespace PlayNirvana.RoundModule.Application.Services
             return nextRoundStartData;
         }
 
-        public IEnumerable<RoundModel> GetActiveRounds()
+        public IEnumerable<RoundDto> GetActiveRounds()
         {
             return roundRepository.ActiveRoundQuery()
-                .Select(x => new RoundModel(x.Id, x.Start))
+                .Select(x => new RoundDto(x.Id, x.Start))
                 .ToList();
         }
 
@@ -142,7 +141,7 @@ namespace PlayNirvana.RoundModule.Application.Services
                 .ExecuteUpdateAsync(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Finished));
         }
 
-        public IEnumerable<RaceDogResultModel> GenerateRoundOutcome(int roundId)
+        public IEnumerable<RaceDogResultDto> GenerateRoundOutcome(int roundId)
         {
             var roundOutcome = GenerateRandomDogoList()
                 .Select((x, i) => new RaceDogResult { RacingDogId = x.Id, Place = i + 1, RoundId = roundId }).ToList();
@@ -151,7 +150,7 @@ namespace PlayNirvana.RoundModule.Application.Services
 
             raceDogResultRepository.Commit();
 
-            return roundOutcome.Select(x => new RaceDogResultModel(x.RacingDogId, x.RoundId));
+            return roundOutcome.Select(x => new RaceDogResultDto(x.RacingDogId, x.RoundId));
         }
 
         //move this generation into some service

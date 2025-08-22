@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using PlayNirvana.CommonModule.Interfaces;
 using PlayNirvana.RoundModule.Application.BackgroundServices;
 using PlayNirvana.RoundModule.Application.Repositories;
@@ -15,10 +17,15 @@ using PlayNirvana.RoundModule.Presentation.RoundHub;
 
 namespace PlayNirvana.RoundModule
 {
-    public static class RoundIoC
+    public static class RoundModuleIoC
     {
         public static IServiceCollection RegisterRoundModule(this IServiceCollection services, IConfigurationManager configuration)
         {
+            services.Configure<HostOptions>(hostOptions =>
+            {
+                hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+            });
+
             services.AddDbContext<RoundModuleDbContext>(options =>
             {
                 options.UseSqlServer(configuration.GetConnectionString("PlayNirvanaConnectionString"), o =>

@@ -16,9 +16,9 @@ namespace PlayNirvana.TicketModule.Presentation
         }
 
         [HttpPost]
-        public Task CreateTicket(CreateTicketModel creatTicketModel)
+        public Task CreateTicket(CreateTicketCommand creatTicketModel)
         {
-            ticketService.ValidateAndCreateTicket(creatTicketModel);
+            this.ticketService.ValidateAndCreateTicket(creatTicketModel);
             return Task.CompletedTask;
         }
     }

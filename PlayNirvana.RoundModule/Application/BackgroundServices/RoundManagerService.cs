@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using PlayNirvana.CommonModule.Models;
 using PlayNirvana.RoundModule.Application.Models;
 using PlayNirvana.RoundModule.Application.Services;
 using PlayNirvana.RoundModule.Common.Exceptions;
@@ -15,7 +14,7 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
     {
         private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly ILogger<RoundManagerService> logger;
-        private RoundModel roundModel;
+        private RoundDto roundModel;
 
         public RoundManagerService(
             IServiceScopeFactory serviceScopeFactory,
@@ -91,7 +90,7 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
 
             var raceStartDelay = Task.Delay(roundModel.CalculateUntilRaceStartWitBetLock());
 
-            IEnumerable<RaceDogResultModel> roundOutcome = await raceStartDelay.ContinueWith((task) =>
+            IEnumerable<RaceDogResultDto> roundOutcome = await raceStartDelay.ContinueWith((task) =>
             {
                 this.logger.LogInformation($" {DateTime.UtcNow} : Round {roundId} locked");
 
@@ -102,11 +101,9 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
 
                 roundHub.Clients.All.RaceStartWithBetLock(roundId);
 
-                ticketModuleIntegration.ProcessRoundBets(new RoundBetsProcessData()
-                {
-                    RaceDogsResult = roundOutcome,
-                    RoundId = roundId
-                });
+                //this can be done async since its long runnig process and it does not depends on anything
+                //or even better offload it to hangfire or something
+                ticketModuleIntegration.ProcessRoundBets(roundId);
 
                 return roundOutcome;
             }, ct);

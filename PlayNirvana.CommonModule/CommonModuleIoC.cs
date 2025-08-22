@@ -2,7 +2,7 @@
 
 namespace PlayNirvana.CommonModule
 {
-    public static class CommonIoC
+    public static class CommonModuleIoC
     {
         public static IServiceCollection RegisterCommonModule(this IServiceCollection services)
         {
