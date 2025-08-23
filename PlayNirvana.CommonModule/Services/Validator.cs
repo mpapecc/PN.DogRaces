@@ -1,4 +1,4 @@
-﻿namespace PlayNirvana.TicketModule.Application.Validators
+﻿namespace PlayNirvana.CommonModule.Services
 {
     public class Validator<T> where T : class
     {

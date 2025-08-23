@@ -2,7 +2,7 @@
 {
     public interface IRoundHubClient
     {
-        Task RoundStarted();
+        Task RoundStarted(int roundId);
         Task RaceStartWithBetLock(int roundId);
         Task RoundFinished(object roundResult);
     }

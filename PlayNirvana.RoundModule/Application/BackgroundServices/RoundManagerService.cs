@@ -62,11 +62,11 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             {
                 await Task.Delay(roundModel.CalculateUntilStart());
                 using PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(120));
-                await ManageRoundAsync(true, ct);
+                await ManageRoundAsync(ct);
 
                 while (await timer.WaitForNextTickAsync(ct))
                 {
-                    await ManageRoundAsync(false, ct);
+                    await ManageRoundAsync(ct);
                 }
             }
             catch (Exception e)
@@ -77,7 +77,7 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             }
         }
 
-        private async Task ManageRoundAsync(bool isFirstExecution, CancellationToken ct)
+        private async Task ManageRoundAsync(CancellationToken ct)
         {
 
             using IServiceScope scope = serviceScopeFactory.CreateScope();
@@ -88,7 +88,7 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             var roundId = roundModel.Id;
 
             this.logger.LogInformation($" {DateTime.UtcNow} : Round {roundId} started");
-            roundHub.Clients.All.RoundStarted();
+            roundHub.Clients.All.RoundStarted(roundId);
 
             var raceStartDelay = Task.Delay(roundModel.CalculateUntilRaceStartWitBetLock());
 
@@ -103,9 +103,10 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
                 var outcome = roundService.GenerateRoundOutcome(roundId);
 
                 this.logger.LogInformation($" {DateTime.UtcNow} : Race for round {roundId} started");
+
                 //this can be done async since its long runnig process and it does not depends on anything
                 //or even better offload it to hangfire or something
-                ticketModuleIntegration.ProcessRoundBets(roundId);
+                Task.Run(() => ticketModuleIntegration.ProcessRoundBets(roundId));
 
                 return outcome;
             }, ct);

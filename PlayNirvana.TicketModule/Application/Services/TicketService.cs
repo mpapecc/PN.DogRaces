@@ -3,7 +3,6 @@ using PlayNirvana.CommonModule.Services;
 using PlayNirvana.TicketModule.Application.Models;
 using PlayNirvana.TicketModule.Application.Repositories;
 using PlayNirvana.TicketModule.Application.Validators;
-using PlayNirvana.TicketModule.Application.Validators.TicketValidators;
 using PlayNirvana.TicketModule.Common.Enums;
 using PlayNirvana.TicketModule.Common.Exceptions;
 using PlayNirvana.TicketModule.Domain.Entites;
@@ -26,7 +25,7 @@ namespace PlayNirvana.TicketModule.Application.Services
             IPaymentModuleIntegration paymentModuleIntegration,
             IExecuteUpdateOrDeleteBatcher executeUpdateOrDeleteBatcher)
         {
-            ticketValidator = betValidators;
+            this.ticketValidator = betValidators;
             this.ticketRoundsValidator = ticketRoundsValidator;
             this.ticketRepository = ticketRepository;
             this.paymentModuleIntegration = paymentModuleIntegration;

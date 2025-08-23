@@ -4,7 +4,7 @@ namespace PlayNirvana.PaymentModule.Application
 {
     public class PaymentService
     {
-        private double credits = 100;
+        public double credits { get; private set; } = 100;
         private IList<CreditReservation> creditReservations = new List<CreditReservation>();
 
         public Guid ReserveAmount(double amount)
@@ -55,7 +55,6 @@ namespace PlayNirvana.PaymentModule.Application
             }
             else
             {
-                this.credits -= reservation.Amount;
                 this.creditReservations.Remove(reservation);
             }
         }
