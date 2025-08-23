@@ -13,7 +13,6 @@ namespace PlayNirvana.RoundModule.Infrastructure.DataContext
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<RacingDog>().HasData()
             base.OnModelCreating(modelBuilder);
         }
 

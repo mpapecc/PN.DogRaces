@@ -1,22 +1,26 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using PlayNirvana.RoundModule.Application.Models;
 using PlayNirvana.RoundModule.Application.Repositories;
 using PlayNirvana.RoundModule.Common.Enums;
 using PlayNirvana.RoundModule.Common.Exceptions;
+using PlayNirvana.RoundModule.Common.Options;
 using PlayNirvana.RoundModule.Domain.Entites;
 
 namespace PlayNirvana.RoundModule.Application.Services
 {
     public class RoundService
     {
+        private readonly RoundOptions roundOptions;
         private readonly IRoundRepository roundRepository;
         private readonly IRoundModuleRepository<RaceDogResult> raceDogResultRepository;
-        private readonly int newRoundsThreshold = 30;
-        private readonly int minimunActiveRounds = 5;
 
-
-        public RoundService(IRoundRepository roundRepository, IRoundModuleRepository<RaceDogResult> raceDogResultRepository)
+        public RoundService(
+            IOptions<RoundOptions> roundOptions,
+            IRoundRepository roundRepository, 
+            IRoundModuleRepository<RaceDogResult> raceDogResultRepository)
         {
+            this.roundOptions = roundOptions.Value;
             this.roundRepository = roundRepository;
             this.raceDogResultRepository = raceDogResultRepository;
         }
@@ -31,24 +35,23 @@ namespace PlayNirvana.RoundModule.Application.Services
             var idleRoundsCount = roundRepository.GetIdleRoundsCount();
             var activeRoundsCount = roundRepository.GetActiveRoundsCount();
 
-            if (idleRoundsCount >= newRoundsThreshold && activeRoundsCount > minimunActiveRounds)
+            if (idleRoundsCount >= this.roundOptions.NewRoundGenerationThreshold && activeRoundsCount > this.roundOptions.MinimunActiveRounds)
             {
                 return;
             }
 
             if (idleRoundsCount == 0)
             {
-
-                GenerateRounds(processFunc: rounds => ActivateFirstNRounds(rounds, minimunActiveRounds + 5));
+                GenerateRounds(processFunc: rounds => ActivateFirstNRounds(rounds, this.roundOptions.MinimunActiveRounds + 5));
             }
-            else if (idleRoundsCount > 0 && idleRoundsCount < newRoundsThreshold)
+            else if (idleRoundsCount > 0 && idleRoundsCount < this.roundOptions.NewRoundGenerationThreshold)
             {
                 var lastRoundStartTime = roundRepository.GetLastIdleRoundStart();
                 GenerateRounds(lastRoundStartTime);
             }
-            else if (activeRoundsCount <= minimunActiveRounds + 2)
+            else if (activeRoundsCount <= this.roundOptions.MinimunActiveRounds + 2)
             {
-                ActivateIdleRoundsAsync(minimunActiveRounds + 5);
+                ActivateIdleRoundsAsync(this.roundOptions.MinimunActiveRounds + 5);
             }
 
             return;
@@ -58,7 +61,7 @@ namespace PlayNirvana.RoundModule.Application.Services
         {
             referentDateTime = referentDateTime ?? RoundTimeSlotGenerator.NextEvenMinuteUtc();
 
-            var rounds = Enumerable.Range(0, newRoundsThreshold)
+            var rounds = Enumerable.Range(0, this.roundOptions.NewRoundGenerationThreshold)
                 .Select(x => new Round()
                 {
                     Start = referentDateTime.Value.AddSeconds(x * RoundDto.roundDurationInSeconds),

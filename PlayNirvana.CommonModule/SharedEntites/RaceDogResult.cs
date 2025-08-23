@@ -1,6 +1,6 @@
 ﻿using PlayNirvana.CommonModule.DataContext.BaseEntities;
 
-namespace PlayNirvana.TicketModule.Domain.Entites
+namespace PlayNirvana.CommonModule.SharedEntites
 {
     public class RaceDogResult : BaseEntity
     {

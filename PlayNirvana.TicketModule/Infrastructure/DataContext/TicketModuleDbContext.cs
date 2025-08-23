@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PlayNirvana.CommonModule.DataContext;
+using PlayNirvana.CommonModule.SharedEntites;
 using PlayNirvana.TicketModule.Domain.Entites;
 
 namespace PlayNirvana.TicketModule.Infrastructure.DataContext
@@ -13,9 +14,7 @@ namespace PlayNirvana.TicketModule.Infrastructure.DataContext
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<RaceDogResult>()
-                .ToTable(x => x.ExcludeFromMigrations())
-                .Metadata.SetSchema(DbSchema.Rounds);
+            modelBuilder.Entity<RaceDogResult>().ToTable(x => x.ExcludeFromMigrations()).Metadata.SetSchema(DbSchema.Rounds);
 
             base.OnModelCreating(modelBuilder);
         }

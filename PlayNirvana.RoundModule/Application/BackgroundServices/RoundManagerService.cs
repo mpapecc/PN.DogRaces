@@ -1,10 +1,14 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using System;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using PlayNirvana.RoundModule.Application.Models;
 using PlayNirvana.RoundModule.Application.Services;
 using PlayNirvana.RoundModule.Common.Exceptions;
+using PlayNirvana.RoundModule.Common.Options;
 using PlayNirvana.RoundModule.Integrations;
 using PlayNirvana.RoundModule.Presentation.RoundHub;
 
@@ -12,15 +16,17 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
 {
     public class RoundManagerService : BackgroundService
     {
+        private readonly RoundOptions roundOptions;
         private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly ILogger<RoundManagerService> logger;
-        private RoundDto roundModel { get; set; }
-        private RoundDto nextRoundModel { get; set; }
+        private RoundDto roundModel;
 
         public RoundManagerService(
+            IOptions<RoundOptions> roundOptions,
             IServiceScopeFactory serviceScopeFactory,
             ILogger<RoundManagerService> logger)
         {
+            this.roundOptions = roundOptions.Value;
             this.serviceScopeFactory = serviceScopeFactory;
             this.logger = logger;
         }
@@ -32,6 +38,7 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
 
             try
             {
+                //get in memory cache
                 roundModel = roundService.GetNextActiveRoundModel();
 
                 if (roundModel.IsStartInPast())
@@ -61,11 +68,15 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             try
             {
                 await Task.Delay(roundModel.CalculateUntilStart());
-                using PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(120));
+                using PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(this.roundOptions.RoundDurationInSeconds));
                 await ManageRoundAsync(ct);
 
                 while (await timer.WaitForNextTickAsync(ct))
                 {
+                    using IServiceScope scope = serviceScopeFactory.CreateScope();
+                    var roundService = scope.ServiceProvider.GetRequiredService<RoundService>();
+
+                    roundModel = roundService.GetNextActiveRoundModel();
                     await ManageRoundAsync(ct);
                 }
             }
@@ -77,9 +88,8 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             }
         }
 
-        private async Task ManageRoundAsync(CancellationToken ct)
+        private Task ManageRoundAsync(CancellationToken ct)
         {
-
             using IServiceScope scope = serviceScopeFactory.CreateScope();
             var roundService = scope.ServiceProvider.GetRequiredService<RoundService>();
             var ticketModuleIntegration = scope.ServiceProvider.GetRequiredService<ITicketModuleIntegration>();
@@ -90,12 +100,38 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             this.logger.LogInformation($" {DateTime.UtcNow} : Round {roundId} started");
             roundHub.Clients.All.RoundStarted(roundId);
 
-            var raceStartDelay = Task.Delay(roundModel.CalculateUntilRaceStartWitBetLock());
-
-            await raceStartDelay.ContinueWith((task) =>
+            System.Timers.Timer raceStartTimer = new System.Timers.Timer(roundModel.CalculateUntilRaceStartWitBetLock())
             {
+                AutoReset = false
+            };
+
+            raceStartTimer.Elapsed += new System.Timers.ElapsedEventHandler(delegate { OnRaceStartEvent(roundId); });
+            raceStartTimer.Start();
+
+            System.Timers.Timer raceFinishTimer = new System.Timers.Timer(roundModel.CalculateUntilRoundFinish())
+            {
+                AutoReset = false
+            };
+
+            raceFinishTimer.Elapsed += new System.Timers.ElapsedEventHandler(delegate { OnRoundFinishEvent(roundId); });
+            raceFinishTimer.Start();
+
+            return Task.CompletedTask;
+        }
+
+        private void OnRaceStartEvent(int roundId)
+        {
+            try
+            {
+                using IServiceScope scope = serviceScopeFactory.CreateScope();
+                var roundService = scope.ServiceProvider.GetRequiredService<RoundService>();
+                var roundHub = scope.ServiceProvider.GetRequiredService<IHubContext<RoundHub, IRoundHubClient>>();
+
                 this.logger.LogInformation($" {DateTime.UtcNow} : Round {roundId} locked");
 
+                //get from memory cache
+                //chech if we have minumon of 7 in cache
+                // if not get rest from database
                 roundService.LockRound(roundId);
 
                 roundHub.Clients.All.RaceStartWithBetLock(roundId);
@@ -106,21 +142,37 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
 
                 //this can be done async since its long runnig process and it does not depends on anything
                 //or even better offload it to hangfire or something
-                Task.Run(() => ticketModuleIntegration.ProcessRoundBets(roundId));
-
-                return outcome;
-            }, ct);
-
-            var roundFinishDelay = Task.Delay(roundModel.CalculateUntilRoundFinish());
-
-            await roundFinishDelay.ContinueWith(task =>
+                Task.Run(() =>
+                {
+                    using IServiceScope scope = serviceScopeFactory.CreateScope();
+                    var ticketModuleIntegration = scope.ServiceProvider.GetRequiredService<ITicketModuleIntegration>();
+                    ticketModuleIntegration.ProcessRoundBets(roundId);
+                });
+            }
+            catch (Exception e)
             {
-                this.logger.LogInformation($" {DateTime.UtcNow} : Race for round {roundId} finished");
-                roundService.FinishRound(roundModel.Id);
-                this.logger.LogInformation($" {DateTime.UtcNow} : Round {roundId} finished");
-            },ct);
+                this.logger.LogError(
+                    "Exception in {name} event handler for RoundId {roundId} : {error}", 
+                    nameof(OnRaceStartEvent), e, roundId);
+            }
+        }
 
-            roundModel = roundService.GetNextActiveRoundModel();
+        private void OnRoundFinishEvent(int roundId)
+        {
+            try
+            {
+                using IServiceScope scope = serviceScopeFactory.CreateScope();
+                var roundService = scope.ServiceProvider.GetRequiredService<RoundService>();
+
+                this.logger.LogInformation($" {DateTime.UtcNow} : Race for round {roundId} finished");
+                roundService.FinishRound(roundId);
+                this.logger.LogInformation($" {DateTime.UtcNow} : Round {roundId} finished");
+            }
+            catch (Exception e)
+            {
+                this.logger.LogError("Exception in {name} event handler for RoundId {roundId}: : {error}", 
+                    nameof(OnRoundFinishEvent), roundId, e);
+            }
         }
     }
 }

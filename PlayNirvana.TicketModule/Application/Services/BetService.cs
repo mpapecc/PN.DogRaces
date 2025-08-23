@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PlayNirvana.CommonModule.Services;
+using PlayNirvana.CommonModule.SharedEntites;
 using PlayNirvana.TicketModule.Application.Repositories;
 using PlayNirvana.TicketModule.Common.Enums;
 using PlayNirvana.TicketModule.Domain.Entites;

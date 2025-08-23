@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using Microsoft.Extensions.Logging;
 using PlayNirvana.CommonModule.Interfaces;
 
 namespace PlayNirvana.RoundModule.Integrations
@@ -21,11 +22,13 @@ namespace PlayNirvana.RoundModule.Integrations
 
         public void ProcessRoundBets(int roundId)
         {
-            this.logger.LogInformation($" {DateTime.UtcNow} : Bets round {roundId} proccess started");
-
+            
+            ThreadPool.QueueUserWorkItem(
+                    _ => { this.logger.LogInformation($" {DateTime.UtcNow} : Bets round {roundId} proccess started"); });
             this.ticketModuleExternal.ProcessRoundBets(roundId);
-            this.logger.LogInformation($" {DateTime.UtcNow} : Bets round {roundId} proccess finished");
-
+            
+            ThreadPool.QueueUserWorkItem(
+                    _ => { this.logger.LogInformation($" {DateTime.UtcNow} : Bets round {roundId} proccess finished"); });
         }
     }
 }

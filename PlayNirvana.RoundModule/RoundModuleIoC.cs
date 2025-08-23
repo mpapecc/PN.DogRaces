@@ -11,6 +11,7 @@ using PlayNirvana.CommonModule.Interfaces;
 using PlayNirvana.RoundModule.Application.BackgroundServices;
 using PlayNirvana.RoundModule.Application.Repositories;
 using PlayNirvana.RoundModule.Application.Services;
+using PlayNirvana.RoundModule.Common.Options;
 using PlayNirvana.RoundModule.External;
 using PlayNirvana.RoundModule.Infrastructure.DataContext;
 using PlayNirvana.RoundModule.Integrations;
@@ -46,7 +47,7 @@ namespace PlayNirvana.RoundModule
 
             services.AddHostedService<RoundManagerService>();
             services.AddHostedService<RoundsGeneratorService>();
-
+            services.Configure<RoundOptions>(configuration.GetSection(nameof(RoundOptions)));
             return services;
         }
 
