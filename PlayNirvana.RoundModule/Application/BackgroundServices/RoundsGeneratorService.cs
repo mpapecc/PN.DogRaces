@@ -11,14 +11,13 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
 
         public RoundsGeneratorService(
             IServiceScopeFactory serviceScopeFactory,
-            ILogger<RoundsGeneratorService> logger)
+            ILogger<RoundsGeneratorService> logger) : base(logger)
         {
             this.serviceScopeFactory = serviceScopeFactory;
             this.logger = logger;
-        }
+        } 
 
-        //every day at midnight
-        public override string CronExpression() => "*/30 * * * * *";
+        public override string CronExpression() => "0 0 * * * *";
 
         public override Task JobAsync(CancellationToken ct)
         {
@@ -32,8 +31,8 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             catch (Exception e)
             {
                 //raise critical error and notify since this is crutial service for app
-                logger.LogCritical(e.Message);
-                Environment.Exit(1);
+                logger.LogError(e, "RoundsGenerator failure!");
+                base.StartAsync(ct);
             }
 
             return Task.CompletedTask;

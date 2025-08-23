@@ -28,12 +28,6 @@ namespace PlayNirvana.RoundModule.Application.Services
 
         public void GenerateRoundIfNeeded()
         {
-            // betting time (7) + race (3) = 10 min
-            // that means in a one day there can be 144 races
-            // we are actually generating 216 races (days and half worth) so that we dont have
-            // issues in case of latency in midnight
-            // we will also check if ther are more then 200 iddle races in if so we will skipp generation
-
             var idleRoundsCount = roundRepository.GetIdleRoundsCount();
             var activeRoundsCount = roundRepository.GetActiveRoundsCount();
 

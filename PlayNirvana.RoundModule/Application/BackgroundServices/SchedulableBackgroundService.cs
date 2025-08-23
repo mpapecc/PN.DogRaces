@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NCrontab;
 using static NCrontab.CrontabSchedule;
 
@@ -7,18 +8,19 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
     public abstract class SchedulableBackgroundService : BackgroundService
     {
         private readonly CrontabSchedule _schedule;
+        private readonly ILogger<SchedulableBackgroundService> logger;
         private DateTime _nextRun;
 
-        protected SchedulableBackgroundService()
+        protected SchedulableBackgroundService(ILogger<SchedulableBackgroundService> logger)
         {
             var cronExpression = CronExpression();
             _schedule = Parse(cronExpression, new ParseOptions { IncludingSeconds = true });
             _nextRun = _schedule.GetNextOccurrence(DateTime.UtcNow);
+            this.logger = logger;
         }
 
         public abstract string CronExpression();
 
-        // Your job implementation
         public abstract Task JobAsync(CancellationToken ct);
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -33,33 +35,18 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
                     {
                         await JobAsync(stoppingToken);
                     }
-                    catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-                    {
-                        // normal shutdown
-                    }
                     catch (Exception ex)
                     {
-                        // TODO: inject ILogger and log the error
-                        // _logger.LogError(ex, "Error running scheduled job.");
+                        //inject ILogger and log the error
+                        this.logger.LogCritical(ex, "SchedulableBackgroundService error!");
                     }
 
-                    // Compute the *next* occurrence from "now"
                     _nextRun = _schedule.GetNextOccurrence(DateTime.UtcNow);
                 }
 
-                // Yield the thread pool: sleep until the next run (or a short backoff)
                 var delay = _nextRun - DateTime.UtcNow;
-                if (delay < TimeSpan.FromMilliseconds(200))
-                    delay = TimeSpan.FromMilliseconds(200); // protective floor
 
-                try
-                {
-                    await Task.Delay(delay, stoppingToken);
-                }
-                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-                {
-                    // shutting down
-                }
+                await Task.Delay(delay, stoppingToken);
             }
         }
     }
