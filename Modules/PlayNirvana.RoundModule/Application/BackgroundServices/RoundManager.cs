@@ -31,34 +31,6 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             this.activeRoundCache = activeRoundCache;
         }
 
-        //public override Task StartAsync(CancellationToken cancellationToken)
-        //{
-        //    this.logger.LogInformation("{service} started", nameof(RoundManagerService));
-
-        //    using IServiceScope scope = serviceScopeFactory.CreateScope();
-        //    var roundService = scope.ServiceProvider.GetRequiredService<RoundService>();
-
-        //    try
-        //    {
-        //        //get in memory cache
-        //        roundModel = roundService.GetNextActiveRoundModel();
-
-        //        if (roundModel.IsStartInPast())
-        //        {
-        //            roundService.TranslateActiveAndIdleRoundsStartInFuture();
-        //            roundModel = roundService.GetNextActiveRoundModel();
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        this.logger.LogError("Unandled exception {error}",e);
-        //        throw;
-        //    }
-        //    this.logger.LogInformation("{service} finished starting", nameof(RoundManagerService));
-
-        //    return base.StartAsync(cancellationToken);
-        //}
-
         protected override async Task ExecuteAsync(CancellationToken ct)
         {
             try

@@ -5,19 +5,19 @@ VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.Web", "PlayNirvana.Web\PlayNirvana.Web.csproj", "{FD8AB9A9-A7B5-4795-A168-8259614A226C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.RoundModule", "PlayNirvana.RoundModule\PlayNirvana.RoundModule.csproj", "{51CA1D67-D458-48BC-8361-291FF6B665F3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.RoundModule", "Modules\PlayNirvana.RoundModule\PlayNirvana.RoundModule.csproj", "{51CA1D67-D458-48BC-8361-291FF6B665F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.CommonModule", "PlayNirvana.CommonModule\PlayNirvana.CommonModule.csproj", "{19F9445A-6E22-4AA4-9549-5764D295428B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.CommonModule", "Modules\PlayNirvana.CommonModule\PlayNirvana.CommonModule.csproj", "{19F9445A-6E22-4AA4-9549-5764D295428B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.TicketModule", "PlayNirvana.TicketModule\PlayNirvana.TicketModule.csproj", "{F161720C-693A-41D8-B02E-C4E587C79DB3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.TicketModule", "Modules\PlayNirvana.TicketModule\PlayNirvana.TicketModule.csproj", "{F161720C-693A-41D8-B02E-C4E587C79DB3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.PaymentModule", "PlayNirvana.PaymentModule\PlayNirvana.PaymentModule.csproj", "{04465A76-2B64-465D-91B2-F18BCC050D5D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.PaymentModule", "Modules\PlayNirvana.PaymentModule\PlayNirvana.PaymentModule.csproj", "{04465A76-2B64-465D-91B2-F18BCC050D5D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{8F811696-B481-4CDD-872A-8DDBD2EE2B14}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{111155E5-DA88-49EC-B9C7-5487DB04CF4A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.UnitTests", "PlayNirvana.UnitTests\PlayNirvana.UnitTests.csproj", "{6991915D-6739-40CF-AF29-B39BE092FC33}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayNirvana.UnitTests", "Tests\PlayNirvana.UnitTests\PlayNirvana.UnitTests.csproj", "{6991915D-6739-40CF-AF29-B39BE092FC33}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
