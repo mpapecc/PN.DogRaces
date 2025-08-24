@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using PlayNirvana.RoundModule.Application.Repositories;
+﻿using PlayNirvana.RoundModule.Application.Repositories;
 using PlayNirvana.RoundModule.Common.Enums;
 using PlayNirvana.RoundModule.Domain.Entites;
 
@@ -7,16 +6,8 @@ namespace PlayNirvana.RoundModule.Infrastructure.DataContext
 {
     public class RoundRepository : RoundModuleRepository<Round>, IRoundRepository
     {
-        private readonly RoundModuleDbContext context;
-
         public RoundRepository(RoundModuleDbContext context) : base(context)
         {
-            this.context = context;
-        }
-
-        public void Sp_TranslateActiveAndIdleRoundsStartInFuture()
-        {
-            context.Database.ExecuteSql($"EXECUTE rounds.sproc_TranslateActiveAndIdleRoundsStartInFuture");
         }
 
         public int GetIdleRoundsCount()
@@ -59,9 +50,9 @@ namespace PlayNirvana.RoundModule.Infrastructure.DataContext
                 .Take(1);
         }
 
-        public IQueryable<Round> ActiveAndIdleRoundQuery()
+        public IQueryable<Round> NonProcessedQuery()
         {
-            return base.Query().Where(x => x.RoundStatus == RoundStatus.Active || x.RoundStatus == RoundStatus.Idle);
+            return base.Query().Where(x => x.RoundStatus == RoundStatus.Active || x.RoundStatus == RoundStatus.Idle || x.RoundStatus == RoundStatus.InProgress);
         }
     }
 }

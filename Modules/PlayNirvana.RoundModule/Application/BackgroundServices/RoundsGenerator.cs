@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -11,20 +10,20 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
 {
     public class RoundsGenerator : BackgroundService
     {
-        private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly ILogger<RoundsGenerator> logger;
         private readonly ActiveRoundCache actieRoundCache;
+        private readonly ScopeRunner scopeRunner;
         private readonly RoundOptions roundOptions;
 
         public RoundsGenerator(
-            IServiceScopeFactory serviceScopeFactory,
             ILogger<RoundsGenerator> logger,
             ActiveRoundCache actieRoundCache,
-            IOptions<RoundOptions> roundOptions) 
+            IOptions<RoundOptions> roundOptions,
+            ScopeRunner scopeRunner)
         {
-            this.serviceScopeFactory = serviceScopeFactory;
             this.logger = logger;
             this.actieRoundCache = actieRoundCache;
+            this.scopeRunner = scopeRunner;
             this.roundOptions = roundOptions.Value;
         }
 
@@ -39,18 +38,19 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
                 );
 
             timer.Start();
+
             return Task.CompletedTask;
         }
 
         private void GenerateRoundsJob()
         {
-            using IServiceScope scope = serviceScopeFactory.CreateScope();
-            var roundGeneratorService = scope.ServiceProvider.GetRequiredService<RoundsGeneratorService>();
+            this.scopeRunner.Run<RoundsGeneratorService>(roundGeneratorService =>
+            {
+                var newRounds = roundGeneratorService.GenerateRoundIfNeeded();
+                var activeRounds = newRounds.Where(x => x.RoundStatus == RoundStatus.Active);
 
-            var newRounds = roundGeneratorService.GenerateRoundIfNeeded();
-            var activeRounds = newRounds.Where(x => x.RoundStatus == RoundStatus.Active);
-
-            actieRoundCache.EnqueueList(activeRounds.Select(x => new RoundDto(x.Id, x.Start)));
+                actieRoundCache.EnqueueList(activeRounds.Select(x => new RoundDto(x.Id, x.Start)));
+            });
         }
     }
 }

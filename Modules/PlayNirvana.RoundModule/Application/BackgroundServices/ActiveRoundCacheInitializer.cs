@@ -8,34 +8,34 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
     public class ActiveRoundCacheInitializer : BackgroundService
     {
         private readonly ILogger<ActiveRoundCacheInitializer> logger;
-        private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly ActiveRoundCache activeRoundCache;
+        private readonly ScopeRunner scopeRunner;
 
         public ActiveRoundCacheInitializer(
             ILogger<ActiveRoundCacheInitializer> logger,
-            IServiceScopeFactory serviceScopeFactory,
-            ActiveRoundCache activeRoundCache)
+            ActiveRoundCache activeRoundCache,
+            ScopeRunner scopeRunner)
         {
             this.logger = logger;
-            this.serviceScopeFactory = serviceScopeFactory;
             this.activeRoundCache = activeRoundCache;
+            this.scopeRunner = scopeRunner;
         }
 
         public override Task StartAsync(CancellationToken cancellationToken)
         {
             this.logger.LogInformation("{service} started", nameof(ActiveRoundCacheInitializer));
 
-            using IServiceScope scope = serviceScopeFactory.CreateScope();
-            var roundService = scope.ServiceProvider.GetRequiredService<RoundService>();
-
-            var activeRounds = roundService.GetActiveRoundDtos();
-
-            foreach (var round in activeRounds)
+            this.scopeRunner.Run<RoundService>(roundService =>
             {
-                activeRoundCache.Enqueue(round);
-            }
+                var activeRounds = roundService.GetActiveRoundDtos();
 
-            this.logger.LogInformation("{service} finshed starting", nameof(ActiveRoundCacheInitializer));
+                foreach (var round in activeRounds)
+                {
+                    activeRoundCache.Enqueue(round);
+                }
+
+                this.logger.LogInformation("{service} finshed starting", nameof(ActiveRoundCacheInitializer));
+            });
 
             return base.StartAsync(cancellationToken);
         }

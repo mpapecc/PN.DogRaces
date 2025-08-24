@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Options;
-using PlayNirvana.RoundModule.Application.Models;
 using PlayNirvana.RoundModule.Application.Repositories;
 using PlayNirvana.RoundModule.Common.Enums;
 using PlayNirvana.RoundModule.Common.Options;
@@ -24,40 +23,50 @@ namespace PlayNirvana.RoundModule.Application.Services
         {
             if (ShouldTranslateRoundInFuture())
             {
-                TranslateActiveAndIdleRoundsStartInFuture();
+                TranslateNonProcessedRoundsStartInFuture();
             }
 
             var idleRoundsCount = roundRepository.GetIdleRoundsCount();
             var activeRoundsCount = roundRepository.GetActiveRoundsCount();
+            var activeRounds = new List<Round>();
 
             if (idleRoundsCount >= this.roundOptions.NewRoundGenerationThreshold && activeRoundsCount > this.roundOptions.MinimunActiveRounds)
             {
-                return Enumerable.Empty<Round>();
+                return activeRounds;
             }
 
             if (idleRoundsCount == 0)
             {
-                return GenerateRounds(processFunc: rounds => ActivateFirstNRounds(rounds, this.roundOptions.MinimunActiveRounds));
+                activeRounds = GenerateRoundsAndReturnActive(activateRoundsCount : this.roundOptions.MinimunActiveRounds).ToList();
+                return activeRounds;
             }
-            else if (idleRoundsCount > 0 && idleRoundsCount < this.roundOptions.NewRoundGenerationThreshold)
+
+            if (idleRoundsCount > 0 && idleRoundsCount < this.roundOptions.NewRoundGenerationThreshold)
             {
                 var lastRoundStartTime = roundRepository.GetLastIdleRoundStart();
 
-                GenerateRounds(lastRoundStartTime);
-
-                return Enumerable.Empty<Round>();
+                GenerateRoundsAndReturnActive(lastRoundStartTime);
             }
             else if (activeRoundsCount <= this.roundOptions.MinimunActiveRounds)
             {
-                return ActivateIdleRounds(this.roundOptions.MinimunActiveRounds);
+                activeRounds.AddRange(ActivateIdleRounds(this.roundOptions.MinimunActiveRounds));
             }
 
-            return Enumerable.Empty<Round>();
+            return activeRounds;
         }
 
-        private void TranslateActiveAndIdleRoundsStartInFuture()
+        public void TranslateNonProcessedRoundsStartInFuture()
         {
-            this.roundRepository.Sp_TranslateActiveAndIdleRoundsStartInFuture();
+            var referentDateTime = RoundTimeSlotGenerator.NextAlignedSlotUtc(this.roundOptions.RoundDurationInSeconds, DateTime.UtcNow);
+
+            var activeAndIdleRounds = this.roundRepository.NonProcessedQuery().ToList();
+
+            for (int i = 0; i < activeAndIdleRounds.Count; i++)
+            {
+                activeAndIdleRounds[i].Start = referentDateTime.AddSeconds(this.roundOptions.RoundDurationInSeconds * i);
+            }
+
+            this.roundRepository.Commit();
         }
 
         private bool ShouldTranslateRoundInFuture()
@@ -67,24 +76,25 @@ namespace PlayNirvana.RoundModule.Application.Services
             return nextActiveRoundStart < DateTime.UtcNow;
         }
 
-        private IEnumerable<Round> GenerateRounds(DateTime? referentDateTime = null, Func<IList<Round>, IList<Round>>? processFunc = null)
+        private IEnumerable<Round> GenerateRoundsAndReturnActive(DateTime? referentDateTime = null, int activateRoundsCount = 0)
         {
-            referentDateTime = referentDateTime ?? RoundTimeSlotGenerator.NextEvenMinuteUtc();
+            //we should check what are product requirements. time span of two minutes is selected by looking into existing solutions on web
+            //also duration of 2 minutes or any other number which adds up to full hour (lets say 1, 1.5, 3, 4, 5, 6) whould be good choice
+            //since it we would not have round start translation within every next hour and we could easily suport such configuration via appsettings or some env variable
+            //for calcualtion next round start at the generation of rounds
+            referentDateTime = referentDateTime ?? RoundTimeSlotGenerator.NextAlignedSlotUtc(this.roundOptions.RoundDurationInSeconds);
 
             var rounds = Enumerable.Range(0, this.roundOptions.NewRoundGenerationThreshold)
-                .Select(x => new Round()
+                .Select((x, i) => new Round()
                 {
-                    Start = referentDateTime.Value.AddSeconds(x * RoundDto.roundDurationInSeconds),
-                    RoundStatus = RoundStatus.Idle,
+                    Start = referentDateTime.Value.AddSeconds(x * this.roundOptions.RoundDurationInSeconds),
+                    RoundStatus = i < activateRoundsCount ? RoundStatus.Active : RoundStatus.Idle,
                 }).ToList();
-
-            if (processFunc != null)
-                rounds = (List<Round>)processFunc(rounds);
 
             roundRepository.InsertRange(rounds);
             roundRepository.Commit();
 
-            return rounds;
+            return rounds.Where(x => x.RoundStatus == RoundStatus.Active);
         }
 
         private IList<Round> ActivateFirstNRounds(IList<Round> rounds, int roundsnNumber)

@@ -4,11 +4,6 @@ namespace PlayNirvana.RoundModule.Application
 {
     public class ActiveRoundCache : Queue<RoundDto>
     {
-        public ActiveRoundCache()
-        {
-
-        }
-
         public IEnumerable<int> GetRoundIdList()
         {
             return this.Select(x => x.Id);

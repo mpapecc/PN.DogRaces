@@ -4,7 +4,6 @@ namespace PlayNirvana.RoundModule.Application.Repositories
 {
     public interface IRoundRepository : IRoundModuleRepository<Round>
     {
-        void Sp_TranslateActiveAndIdleRoundsStartInFuture();
         int GetIdleRoundsCount();
         int GetActiveRoundsCount();
         DateTime GetLastIdleRoundStart();
@@ -12,6 +11,6 @@ namespace PlayNirvana.RoundModule.Application.Repositories
         IQueryable<Round> GetNextRoundForExecutionQuery();
         IQueryable<Round> LockedRoundQuery();
         IQueryable<Round> ActiveRoundQuery();
-        IQueryable<Round> ActiveAndIdleRoundQuery();
+        IQueryable<Round> NonProcessedQuery();
     }
 }

@@ -2,24 +2,17 @@
 {
     public static class RoundTimeSlotGenerator
     {
-        public static DateTime NextEvenMinuteUtc()
+        public static DateTime NextAlignedSlotUtc(int slotSeconds, DateTime? nowUtc = null)
         {
-            return NextEvenMinuteUtc(DateTime.UtcNow);
-        }
+            var now = nowUtc ?? DateTime.UtcNow;
+            if (now.Kind != DateTimeKind.Utc)
+                now = DateTime.SpecifyKind(now, DateTimeKind.Utc);
 
-        public static DateTime NextEvenMinuteUtc(DateTime utcNow)
-        {
-            if (utcNow.Kind != DateTimeKind.Utc)
-                utcNow = DateTime.SpecifyKind(utcNow, DateTimeKind.Utc); // assumes input is already UTC
+            var hourStart = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, DateTimeKind.Utc);
+            var elapsedSeconds = (int)Math.Floor((now - hourStart).TotalSeconds);
 
-            var next = new DateTime(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, utcNow.Minute, 0, DateTimeKind.Utc)
-                       .AddMinutes(1);
-
-            if ((next.Minute & 1) == 1)
-                next = next.AddMinutes(1);
-
-            next.AddSeconds(-next.Second);
-            return next;
+            var nextIndex = (elapsedSeconds / slotSeconds) + 1;
+            return hourStart.AddSeconds(nextIndex * slotSeconds);
         }
     }
 }

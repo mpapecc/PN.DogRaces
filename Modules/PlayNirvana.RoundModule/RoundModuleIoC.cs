@@ -23,11 +23,16 @@ namespace PlayNirvana.RoundModule
     {
         public static IServiceCollection RegisterRoundModule(this IServiceCollection services, IConfigurationManager configuration)
         {
-            services.Configure<HostOptions>(hostOptions =>
-            {
-                hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
-            });
+            services.RegisterInfrastructure(configuration)
+                    .RegisterServices()
+                    .RegisterBackgroundServices()
+                    .RegisterOptions();
 
+            return services;
+        }
+
+        private static IServiceCollection RegisterInfrastructure(this IServiceCollection services, IConfigurationManager configuration)
+        {
             services.AddDbContext<RoundModuleDbContext>(options =>
             {
                 options.UseSqlServer(configuration.GetConnectionString("PlayNirvanaConnectionString"), o =>
@@ -38,19 +43,64 @@ namespace PlayNirvana.RoundModule
 
             services.AddScoped(typeof(IRoundModuleRepository<>), typeof(RoundModuleRepository<>));
             services.AddScoped<IRoundRepository, RoundRepository>();
+            services.AddScoped<ITicketModuleIntegration, TicketModuleIntegration>();
+
+            return services;
+        }
+
+        private static IServiceCollection RegisterServices(this IServiceCollection services)
+        {
             services.AddSingleton<ActiveRoundCache>();
+            services.AddSingleton<ScopeRunner>();
 
             services.AddScoped<RoundService>();
             services.AddScoped<RoundsGeneratorService>();
             services.AddScoped<RoundOutcomeService>();
-
             services.AddScoped<IRoundModuleExternal, RoundModuleExternal>();
-            services.AddScoped<ITicketModuleIntegration, TicketModuleIntegration>();
+
+            return services;
+        }
+
+        private static IServiceCollection RegisterBackgroundServices(this IServiceCollection services)
+        {
+            services.Configure<HostOptions>(hostOptions =>
+            {
+                hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+            });
 
             services.AddHostedService<RoundsGenerator>();
             services.AddHostedService<ActiveRoundCacheInitializer>();
             services.AddHostedService<RoundManager>();
-            services.Configure<RoundOptions>(configuration.GetSection(nameof(RoundOptions)));
+
+            return services;
+        }
+
+        private static IServiceCollection RegisterOptions(this IServiceCollection services)
+        {
+            services.AddOptions<RoundOptions>()
+                    .BindConfiguration(nameof(RoundOptions))
+                    .Validate(roundOptions =>
+                    {
+                        bool IsRoundDurationGreaterThenSegmentsDuration()
+                        {
+                            var requiredDuration = roundOptions.RaceDurationInSeconds + roundOptions.RoundLockBeforeRaceStart + roundOptions.MinimumRoundDurationBeforeLockInSeconds;
+                            return roundOptions.RoundDurationInSeconds > requiredDuration;
+                        }
+
+                        return IsRoundDurationGreaterThenSegmentsDuration();
+
+                    }, "Total round segments duration is greater then round duration or Duration. Change values in appsettings.json file")
+                    .Validate(roundOptions =>
+                    {
+                        bool IsRoundDurationValid()
+                        {
+                            return 3600 % roundOptions.RoundDurationInSeconds == 0;
+                        }
+
+                        return IsRoundDurationValid();
+                    }, "Round duration is not valid, should be set to satisfy 3600 % x == 0. Change values in appsettings.json file")
+                    .ValidateOnStart();
+
             return services;
         }
 
