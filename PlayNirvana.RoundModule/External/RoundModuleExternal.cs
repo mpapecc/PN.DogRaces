@@ -1,20 +1,21 @@
 ﻿using PlayNirvana.CommonModule.Interfaces;
+using PlayNirvana.RoundModule.Application;
 using PlayNirvana.RoundModule.Application.Repositories;
 
 namespace PlayNirvana.RoundModule.External
 {
     public class RoundModuleExternal : IRoundModuleExternal
     {
-        private readonly IRoundRepository roundRepository;
+        private readonly ActiveRoundCache activeRoundCache;
 
-        public RoundModuleExternal(IRoundRepository roundRepository)
+        public RoundModuleExternal(ActiveRoundCache activeRoundCache)
         {
-            this.roundRepository = roundRepository;
+            this.activeRoundCache = activeRoundCache;
         }
 
         public IEnumerable<int> ActiveRoundIds()
         {
-            return roundRepository.ActiveRoundQuery().Select(x => x.Id).ToList();
+            return activeRoundCache.GetRoundIdList();
         }
     }
 }

@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using PlayNirvana.CommonModule;
 using PlayNirvana.CommonModule.DataContext;
 using PlayNirvana.CommonModule.Interfaces;
-using PlayNirvana.CommonModule.Services;
 using PlayNirvana.TicketModule.Application.Repositories;
 using PlayNirvana.TicketModule.Application.Services;
 using PlayNirvana.TicketModule.External;

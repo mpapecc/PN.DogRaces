@@ -1,4 +1,5 @@
-﻿using PlayNirvana.CommonModule.Services;
+﻿using PlayNirvana.CommonModule;
+using PlayNirvana.CommonModule.Services;
 using PlayNirvana.TicketModule.Domain.Entites;
 using PlayNirvana.TicketModule.Integrations;
 

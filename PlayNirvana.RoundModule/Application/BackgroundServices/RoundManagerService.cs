@@ -1,13 +1,10 @@
-﻿using System;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PlayNirvana.RoundModule.Application.Models;
 using PlayNirvana.RoundModule.Application.Services;
-using PlayNirvana.RoundModule.Common.Exceptions;
 using PlayNirvana.RoundModule.Common.Options;
 using PlayNirvana.RoundModule.Integrations;
 using PlayNirvana.RoundModule.Presentation.RoundHub;
@@ -19,65 +16,69 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
         private readonly RoundOptions roundOptions;
         private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly ILogger<RoundManagerService> logger;
-        private RoundDto roundModel;
+        private readonly ActiveRoundCache activeRoundCache;
+        //private RoundDto roundModel;
 
         public RoundManagerService(
             IOptions<RoundOptions> roundOptions,
             IServiceScopeFactory serviceScopeFactory,
-            ILogger<RoundManagerService> logger)
+            ILogger<RoundManagerService> logger,
+            ActiveRoundCache activeRoundCache)
         {
             this.roundOptions = roundOptions.Value;
             this.serviceScopeFactory = serviceScopeFactory;
             this.logger = logger;
+            this.activeRoundCache = activeRoundCache;
         }
 
-        public override Task StartAsync(CancellationToken cancellationToken)
-        {
-            using IServiceScope scope = serviceScopeFactory.CreateScope();
-            var roundService = scope.ServiceProvider.GetRequiredService<RoundService>();
+        //public override Task StartAsync(CancellationToken cancellationToken)
+        //{
+        //    this.logger.LogInformation("{service} started", nameof(RoundManagerService));
 
-            try
-            {
-                //get in memory cache
-                roundModel = roundService.GetNextActiveRoundModel();
+        //    using IServiceScope scope = serviceScopeFactory.CreateScope();
+        //    var roundService = scope.ServiceProvider.GetRequiredService<RoundService>();
 
-                if (roundModel.IsStartInPast())
-                {
-                    roundService.TranslateActiveAndIdleRoundsStartInFuture();
-                    roundModel = roundService.GetNextActiveRoundModel();
-                }
-            }
-            catch (NoActiveRoundsException e)
-            {
-                this.logger.LogWarning(e.Message);
+        //    try
+        //    {
+        //        //get in memory cache
+        //        roundModel = roundService.GetNextActiveRoundModel();
 
-                roundService.GenerateRoundIfNeeded();
-                roundModel = roundService.GetNextActiveRoundModel();
-            }
-            catch (Exception e)
-            {
-                this.logger.LogError("Unandled exception {error}",e);
-                throw;
-            }
+        //        if (roundModel.IsStartInPast())
+        //        {
+        //            roundService.TranslateActiveAndIdleRoundsStartInFuture();
+        //            roundModel = roundService.GetNextActiveRoundModel();
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        this.logger.LogError("Unandled exception {error}",e);
+        //        throw;
+        //    }
+        //    this.logger.LogInformation("{service} finished starting", nameof(RoundManagerService));
 
-            return base.StartAsync(cancellationToken);
-        }
+        //    return base.StartAsync(cancellationToken);
+        //}
 
         protected override async Task ExecuteAsync(CancellationToken ct)
         {
             try
             {
+                var roundModel = this.activeRoundCache.Peek();
+
                 await Task.Delay(roundModel.CalculateUntilStart());
                 using PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(this.roundOptions.RoundDurationInSeconds));
-                await ManageRoundAsync(ct);
+                await ManageRoundAsync(this.activeRoundCache.Dequeue(), ct);
 
                 while (await timer.WaitForNextTickAsync(ct))
                 {
-                    using IServiceScope scope = serviceScopeFactory.CreateScope();
-                    var roundService = scope.ServiceProvider.GetRequiredService<RoundService>();
-
-                    roundModel = roundService.GetNextActiveRoundModel();
-                    await ManageRoundAsync(ct);
+                    if (this.activeRoundCache.Any())
+                    {
+                        await ManageRoundAsync(this.activeRoundCache.Dequeue(), ct);
+                    }
+                    else
+                    {
+                        this.logger.LogCritical("No more active rounds for processing !!!");
+                    }
                 }
             }
             catch (Exception e)
@@ -88,7 +89,7 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             }
         }
 
-        private Task ManageRoundAsync(CancellationToken ct)
+        private async Task ManageRoundAsync(RoundDto roundModel, CancellationToken ct)
         {
             using IServiceScope scope = serviceScopeFactory.CreateScope();
             var roundService = scope.ServiceProvider.GetRequiredService<RoundService>();
@@ -98,7 +99,7 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             var roundId = roundModel.Id;
 
             this.logger.LogInformation($" {DateTime.UtcNow} : Round {roundId} started");
-            roundHub.Clients.All.RoundStarted(roundId);
+            await roundHub.Clients.All.RoundStarted(roundId);
 
             System.Timers.Timer raceStartTimer = new System.Timers.Timer(roundModel.CalculateUntilRaceStartWitBetLock())
             {
@@ -116,7 +117,6 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             raceFinishTimer.Elapsed += new System.Timers.ElapsedEventHandler(delegate { OnRoundFinishEvent(roundId); });
             raceFinishTimer.Start();
 
-            return Task.CompletedTask;
         }
 
         private void OnRaceStartEvent(int roundId)
@@ -129,9 +129,6 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
 
                 this.logger.LogInformation($" {DateTime.UtcNow} : Round {roundId} locked");
 
-                //get from memory cache
-                //chech if we have minumon of 7 in cache
-                // if not get rest from database
                 roundService.LockRound(roundId);
 
                 roundHub.Clients.All.RaceStartWithBetLock(roundId);

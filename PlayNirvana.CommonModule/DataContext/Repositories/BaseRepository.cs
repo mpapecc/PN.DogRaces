@@ -1,6 +1,6 @@
 ﻿using PlayNirvana.CommonModule.DataContext.BaseEntities;
 
-namespace PlayNirvana.CommonModule.DataContext
+namespace PlayNirvana.CommonModule.DataContext.Repositories
 {
     public abstract class BaseRepository<T> : IRepository<T> where T : BaseEntity
     {

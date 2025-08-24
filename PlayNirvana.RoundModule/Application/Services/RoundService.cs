@@ -27,37 +27,51 @@ namespace PlayNirvana.RoundModule.Application.Services
 
         public void TranslateActiveAndIdleRoundsStartInFuture()
         {
-            roundRepository.Sp_TranslateActiveAndIdleRoundsStartInFuture();
+            this.roundRepository.Sp_TranslateActiveAndIdleRoundsStartInFuture();
         }
 
-        public void GenerateRoundIfNeeded()
+        public bool ShouldTranslateRoundInFuture()
         {
+            var nextActiveRoundStart = this.roundRepository.ActiveRoundQuery().Select(x => x.Start).FirstOrDefault();
+
+            return nextActiveRoundStart < DateTime.UtcNow;
+        }
+
+        public IEnumerable<Round> GenerateRoundIfNeeded()
+        {
+            if (ShouldTranslateRoundInFuture())
+            {
+                TranslateActiveAndIdleRoundsStartInFuture();
+            }
+
             var idleRoundsCount = roundRepository.GetIdleRoundsCount();
             var activeRoundsCount = roundRepository.GetActiveRoundsCount();
 
             if (idleRoundsCount >= this.roundOptions.NewRoundGenerationThreshold && activeRoundsCount > this.roundOptions.MinimunActiveRounds)
             {
-                return;
+                return Enumerable.Empty<Round>();
             }
 
             if (idleRoundsCount == 0)
             {
-                GenerateRounds(processFunc: rounds => ActivateFirstNRounds(rounds, this.roundOptions.MinimunActiveRounds + 5));
+                return GenerateRounds(processFunc: rounds => ActivateFirstNRounds(rounds, this.roundOptions.MinimunActiveRounds));
             }
             else if (idleRoundsCount > 0 && idleRoundsCount < this.roundOptions.NewRoundGenerationThreshold)
             {
                 var lastRoundStartTime = roundRepository.GetLastIdleRoundStart();
+
                 GenerateRounds(lastRoundStartTime);
+                return Enumerable.Empty<Round>();
             }
-            else if (activeRoundsCount <= this.roundOptions.MinimunActiveRounds + 2)
+            else if (activeRoundsCount <= this.roundOptions.MinimunActiveRounds)
             {
-                ActivateIdleRoundsAsync(this.roundOptions.MinimunActiveRounds + 5);
+                return ActivateIdleRoundsAsync(this.roundOptions.MinimunActiveRounds);
             }
 
-            return;
+            return Enumerable.Empty<Round>();
         }
 
-        private void GenerateRounds(DateTime? referentDateTime = null, Func<IList<Round>, IList<Round>>? processFunc = null)
+        private IEnumerable<Round> GenerateRounds(DateTime? referentDateTime = null, Func<IList<Round>, IList<Round>>? processFunc = null)
         {
             referentDateTime = referentDateTime ?? RoundTimeSlotGenerator.NextEvenMinuteUtc();
 
@@ -73,6 +87,8 @@ namespace PlayNirvana.RoundModule.Application.Services
 
             roundRepository.InsertRange(rounds);
             roundRepository.Commit();
+
+            return rounds;
         }
 
         private IList<Round> ActivateFirstNRounds(IList<Round> rounds, int roundsnNumber)
@@ -101,7 +117,7 @@ namespace PlayNirvana.RoundModule.Application.Services
             return nextRoundStartData;
         }
 
-        public IEnumerable<RoundDto> GetActiveRounds()
+        public IEnumerable<RoundDto> GetActiveRoundDtos()
         {
             return roundRepository.ActiveRoundQuery()
                 .Select(x => new RoundDto(x.Id, x.Start))
@@ -114,13 +130,27 @@ namespace PlayNirvana.RoundModule.Application.Services
                                 .Where(x => x.Id == roundId)
                                 .ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Active));
         }
-
-        public Task ActivateIdleRoundsAsync(int roundsCount)
+        public void ActivateFirstIdleRound()
         {
-            return roundRepository.IdleRoundQuery()
+            roundRepository.IdleRoundQuery()
+                                .OrderBy(x => x.Start)
+                                .Take(1)
+                                .ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Active));
+        }
+
+
+        public IEnumerable<Round> ActivateIdleRoundsAsync(int roundsCount)
+        {
+
+            var rounds = roundRepository.IdleRoundQuery()
                                 .OrderBy(x => x.Start)
                                 .Take(roundsCount)
-                                .ExecuteUpdateAsync(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Active));
+                                .ToList();
+            rounds.ForEach(x => x.RoundStatus = RoundStatus.Active);
+
+            this.roundRepository.Commit();
+
+            return rounds;
         }
 
         public void LockRound(int roundId)

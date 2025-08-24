@@ -39,7 +39,7 @@
 
         public bool IsStartInPast()
         {
-            return this.Start <= DateTime.UtcNow;
+            return Start <= DateTime.UtcNow;
         }
 
         public static DateTime CalculateRoundRaceStartWithLock(DateTime roundStart)
