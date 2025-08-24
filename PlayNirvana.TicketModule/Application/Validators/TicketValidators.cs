@@ -1,5 +1,6 @@
-﻿using PlayNirvana.CommonModule;
+﻿using Microsoft.Extensions.Options;
 using PlayNirvana.CommonModule.Services;
+using PlayNirvana.TicketModule.Common.Options;
 using PlayNirvana.TicketModule.Domain.Entites;
 using PlayNirvana.TicketModule.Integrations;
 
@@ -8,11 +9,16 @@ namespace PlayNirvana.TicketModule.Application.Validators
     public class TicketWinAmountValidator : IValidator<Ticket>
     {
         public static readonly string message = "Bet win amount can not be greater then 100 00";
-        public static readonly int maxWinAmount = 100_000;
+        private readonly TicketOptions ticketOptions;
+
+        public TicketWinAmountValidator(IOptions<TicketOptions> ticketOptions)
+        {
+            this.ticketOptions = ticketOptions.Value;
+        }
 
         public ValidationResult Validate(Ticket ticket)
         {
-            if (ticket.WinAmount > maxWinAmount)
+            if (ticket.WinAmount > ticketOptions.MaxWinAmount)
                 return ValidationResult.Failed(message);
             return ValidationResult.Sucess();
         }
@@ -43,14 +49,19 @@ namespace PlayNirvana.TicketModule.Application.Validators
         }
     }
 
-    public class TicketAmountValidator : IValidator<Ticket>
+    public class TicketBetAmountValidator : IValidator<Ticket>
     {
         public static readonly string message = "Bet amaount can not be greater then 10 000";
-        public static readonly int maxBetAmount = 10_000;
-        
+        private readonly TicketOptions ticketOptions;
+
+        public TicketBetAmountValidator(IOptions<TicketOptions> ticketOptions)
+        {
+            this.ticketOptions = ticketOptions.Value;
+        }
+
         public ValidationResult Validate(Ticket ticket)
         {
-            if (ticket.BetAmount > maxBetAmount)
+            if (ticket.BetAmount > ticketOptions.MaxBetAmount)
                 return ValidationResult.Failed(message);
             return ValidationResult.Sucess();
         }

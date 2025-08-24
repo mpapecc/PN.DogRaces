@@ -23,8 +23,6 @@ namespace PlayNirvana.RoundModule.Presentation.Controllers
         [HttpGet(nameof(GetActiveRounds))]
         public IEnumerable<RoundDto> GetActiveRounds()
         {
-            //return roundService.GetActiveRoundDtos();
-
             return this.activeRoundCache.ToList();
         }
     }

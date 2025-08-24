@@ -1,12 +1,10 @@
-﻿using System.Reflection;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using PlayNirvana.CommonModule;
 using PlayNirvana.CommonModule.DataContext;
 using PlayNirvana.CommonModule.Interfaces;
 using PlayNirvana.RoundModule.Application;
@@ -43,13 +41,15 @@ namespace PlayNirvana.RoundModule
             services.AddSingleton<ActiveRoundCache>();
 
             services.AddScoped<RoundService>();
+            services.AddScoped<RoundsGeneratorService>();
+            services.AddScoped<RoundOutcomeService>();
 
             services.AddScoped<IRoundModuleExternal, RoundModuleExternal>();
             services.AddScoped<ITicketModuleIntegration, TicketModuleIntegration>();
 
-            services.AddHostedService<RoundsGeneratorService>();
+            services.AddHostedService<RoundsGenerator>();
             services.AddHostedService<ActiveRoundCacheInitializer>();
-            services.AddHostedService<RoundManagerService>();
+            services.AddHostedService<RoundManager>();
             services.Configure<RoundOptions>(configuration.GetSection(nameof(RoundOptions)));
             return services;
         }

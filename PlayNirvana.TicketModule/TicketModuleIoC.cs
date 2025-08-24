@@ -8,6 +8,7 @@ using PlayNirvana.CommonModule.DataContext;
 using PlayNirvana.CommonModule.Interfaces;
 using PlayNirvana.TicketModule.Application.Repositories;
 using PlayNirvana.TicketModule.Application.Services;
+using PlayNirvana.TicketModule.Common.Options;
 using PlayNirvana.TicketModule.External;
 using PlayNirvana.TicketModule.Infrastructure.DataContext;
 using PlayNirvana.TicketModule.Integrations;
@@ -36,6 +37,8 @@ namespace PlayNirvana.TicketModule
 
             services.AddScoped<TicketService>();
             services.AddScoped<BetService>();
+
+            services.Configure<TicketOptions>(configuration.GetSection(nameof(TicketOptions)));
 
             services.AddValidators(typeof(TicketModuleIoC).Assembly);
             return services;

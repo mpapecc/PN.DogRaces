@@ -5,5 +5,6 @@
         public int MinimunActiveRounds { get; set; }
         public int NewRoundGenerationThreshold { get; set; }
         public int RoundDurationInSeconds { get; set; }
+        public int RoundsGeneratorIntervalInMinutes { get; set; }
     }
 }

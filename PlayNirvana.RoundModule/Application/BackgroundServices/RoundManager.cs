@@ -11,18 +11,18 @@ using PlayNirvana.RoundModule.Presentation.RoundHub;
 
 namespace PlayNirvana.RoundModule.Application.BackgroundServices
 {
-    public class RoundManagerService : BackgroundService
+    public class RoundManager : BackgroundService
     {
         private readonly RoundOptions roundOptions;
         private readonly IServiceScopeFactory serviceScopeFactory;
-        private readonly ILogger<RoundManagerService> logger;
+        private readonly ILogger<RoundManager> logger;
         private readonly ActiveRoundCache activeRoundCache;
         //private RoundDto roundModel;
 
-        public RoundManagerService(
+        public RoundManager(
             IOptions<RoundOptions> roundOptions,
             IServiceScopeFactory serviceScopeFactory,
-            ILogger<RoundManagerService> logger,
+            ILogger<RoundManager> logger,
             ActiveRoundCache activeRoundCache)
         {
             this.roundOptions = roundOptions.Value;
@@ -84,7 +84,7 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             catch (Exception e)
             {
                 this.logger.LogError("Unandled exception {error}", e);
-                this.logger.LogError("Starting {service} again!", nameof(RoundManagerService));
+                this.logger.LogError("Starting {service} again!", nameof(RoundManager));
                 await StartAsync(ct);
             }
         }
@@ -125,6 +125,7 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             {
                 using IServiceScope scope = serviceScopeFactory.CreateScope();
                 var roundService = scope.ServiceProvider.GetRequiredService<RoundService>();
+                var roundOutcomeService = scope.ServiceProvider.GetRequiredService<RoundOutcomeService>();
                 var roundHub = scope.ServiceProvider.GetRequiredService<IHubContext<RoundHub, IRoundHubClient>>();
 
                 this.logger.LogInformation($" {DateTime.UtcNow} : Round {roundId} locked");
@@ -133,7 +134,7 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
 
                 roundHub.Clients.All.RaceStartWithBetLock(roundId);
 
-                var outcome = roundService.GenerateRoundOutcome(roundId);
+                var outcome = roundOutcomeService.GenerateRoundOutcome(roundId);
 
                 this.logger.LogInformation($" {DateTime.UtcNow} : Race for round {roundId} started");
 

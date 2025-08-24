@@ -1,5 +1,7 @@
-﻿using NSubstitute;
+﻿using Microsoft.Extensions.Options;
+using NSubstitute;
 using PlayNirvana.TicketModule.Application.Validators;
+using PlayNirvana.TicketModule.Common.Options;
 using PlayNirvana.TicketModule.Domain.Entites;
 using PlayNirvana.TicketModule.Integrations;
 
@@ -10,11 +12,13 @@ namespace PlayNirvana.UnitTests
         [Fact]
         public void ValidateTicketBetAmount_Should_Fail()
         {
-            var betAmountValidator = new TicketAmountValidator();
+
+            var ticketOptions = Options.Create(new TicketOptions() { MaxBetAmount = 10 });
+            var betAmountValidator = new TicketBetAmountValidator(ticketOptions);
 
             var ticket = new Ticket()
             {
-                BetAmount = 10_000
+                BetAmount = 100
             };
 
             var validationResult = betAmountValidator.Validate(ticket);
@@ -25,11 +29,13 @@ namespace PlayNirvana.UnitTests
         [Fact]
         public void ValidateTicketWinAmount_Should_Fail()
         {
-            var betAmountValidator = new TicketWinAmountValidator();
+            var ticketOptions = Options.Create(new TicketOptions() { MaxWinAmount = 10 });
+
+            var betAmountValidator = new TicketWinAmountValidator(ticketOptions);
 
             var ticket = new Ticket()
             {
-                WinAmount = 100_000
+                WinAmount = 100
             };
 
             var validationResult = betAmountValidator.Validate(ticket);
