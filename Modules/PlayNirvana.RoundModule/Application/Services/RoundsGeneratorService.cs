@@ -21,11 +21,6 @@ namespace PlayNirvana.RoundModule.Application.Services
 
         public IEnumerable<Round> GenerateRoundIfNeeded()
         {
-            if (ShouldTranslateRoundInFuture())
-            {
-                TranslateNonProcessedRoundsStartInFuture();
-            }
-
             var idleRoundsCount = roundRepository.GetIdleRoundsCount();
             var activeRoundsCount = roundRepository.GetActiveRoundsCount();
             var activeRounds = new List<Round>();
@@ -69,11 +64,11 @@ namespace PlayNirvana.RoundModule.Application.Services
             this.roundRepository.Commit();
         }
 
-        private bool ShouldTranslateRoundInFuture()
+        public bool IsFirstRoundForProcessStartInFuture()
         {
-            var nextActiveRoundStart = this.roundRepository.ActiveRoundQuery().Select(x => x.Start).FirstOrDefault();
+            var nextRoundStart = this.roundRepository.ActiveAnInProgressRoundQuery().Select(x => x.Start).FirstOrDefault();
 
-            return nextActiveRoundStart < DateTime.UtcNow;
+            return nextRoundStart < DateTime.UtcNow;
         }
 
         private IEnumerable<Round> GenerateRoundsAndReturnActive(DateTime? referentDateTime = null, int activateRoundsCount = 0)

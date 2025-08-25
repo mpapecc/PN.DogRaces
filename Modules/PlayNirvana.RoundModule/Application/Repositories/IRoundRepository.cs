@@ -8,9 +8,9 @@ namespace PlayNirvana.RoundModule.Application.Repositories
         int GetActiveRoundsCount();
         DateTime GetLastIdleRoundStart();
         IQueryable<Round> IdleRoundQuery();
-        IQueryable<Round> GetNextRoundForExecutionQuery();
         IQueryable<Round> LockedRoundQuery();
         IQueryable<Round> ActiveRoundQuery();
+        IQueryable<Round> ActiveAnInProgressRoundQuery();
         IQueryable<Round> NonProcessedQuery();
     }
 }

@@ -33,6 +33,8 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
 
         public override Task StartAsync(CancellationToken ct)
         {
+            //this is case when round is locked and then system crashes
+            //we want on next startup detect if there are locked rounds and process them first
             Task.Run(() => ProcessLockedRoundsBetsIfNeeded(), ct);
             return base.StartAsync(ct);
         }
@@ -42,8 +44,8 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             try
             {
                 var roundModel = this.activeRoundCache.Peek();
-
                 await Task.Delay(roundModel.CalculateUntilRoundStart());
+
                 using PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(this.roundOptions.RoundDurationInSeconds));
                 await ManageRoundAsync(this.activeRoundCache.Dequeue());
 

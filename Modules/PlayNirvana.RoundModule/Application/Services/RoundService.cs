@@ -20,15 +20,15 @@ namespace PlayNirvana.RoundModule.Application.Services
         public void LockRound(int roundId)
         {
             roundRepository.Query()
-                .Where(x => x.Id == roundId).
-                ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Locked));
+                .Where(x => x.Id == roundId)
+                .ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Locked));
         }
 
         public void StartRoundProgress(int roundId)
         {
             roundRepository.Query()
-                .Where(x => x.Id == roundId).
-                ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.InProgress));
+                .Where(x => x.Id == roundId)
+                .ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.InProgress));
         }
 
         public void FinishRound(int roundId)
@@ -40,7 +40,15 @@ namespace PlayNirvana.RoundModule.Application.Services
 
         public IEnumerable<RoundDto> GetActiveRoundDtos()
         {
-            return roundRepository.ActiveRoundQuery().Select(x => new RoundDto(x.Id, x.Start)).ToList();
+            return roundRepository.ActiveRoundQuery()
+                .Select(x => new RoundDto(x.Id, x.Start)).ToList();
+        }
+
+        public IEnumerable<RoundDto> GetActiveAnInProgressRoundDtos()
+        {
+            return roundRepository.ActiveAnInProgressRoundQuery()
+                .OrderBy(x => x.Start)
+                .Select(x => new RoundDto(x.Id, x.Start)).ToList();
         }
     }
 }

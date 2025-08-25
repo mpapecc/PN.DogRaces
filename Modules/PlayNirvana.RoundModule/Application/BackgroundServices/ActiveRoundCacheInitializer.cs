@@ -23,11 +23,11 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
 
         public override Task StartAsync(CancellationToken cancellationToken)
         {
-            this.logger.LogInformation("{service} started", nameof(ActiveRoundCacheInitializer));
-
             this.scopeRunner.Run<RoundService>(roundService =>
             {
-                var activeRounds = roundService.GetActiveRoundDtos();
+                this.logger.LogInformation("{service} started", nameof(ActiveRoundCacheInitializer));
+
+                var activeRounds = roundService.GetActiveAnInProgressRoundDtos();
 
                 foreach (var round in activeRounds)
                 {

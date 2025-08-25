@@ -46,6 +46,11 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
         {
             this.scopeRunner.Run<RoundsGeneratorService>(roundGeneratorService =>
             {
+                if (roundGeneratorService.IsFirstRoundForProcessStartInFuture())
+                {
+                    roundGeneratorService.TranslateNonProcessedRoundsStartInFuture();
+                }
+
                 var newRounds = roundGeneratorService.GenerateRoundIfNeeded();
                 var activeRounds = newRounds.Where(x => x.RoundStatus == RoundStatus.Active);
 

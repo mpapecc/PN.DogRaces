@@ -43,11 +43,9 @@ namespace PlayNirvana.RoundModule.Infrastructure.DataContext
             return base.Query().Where(x => x.RoundStatus == RoundStatus.Locked);
         }
 
-        public IQueryable<Round> GetNextRoundForExecutionQuery()
+        public IQueryable<Round> ActiveAnInProgressRoundQuery()
         {
-            return ActiveRoundQuery()
-                .OrderBy(x => x.Start)
-                .Take(1);
+            return base.Query().Where(x => x.RoundStatus == RoundStatus.Active || x.RoundStatus == RoundStatus.InProgress);
         }
 
         public IQueryable<Round> NonProcessedQuery()
