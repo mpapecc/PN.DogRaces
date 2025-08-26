@@ -10,29 +10,34 @@ namespace PlayNirvana.RoundModule.Application.Services
     {
         private readonly RoundOptions roundOptions;
         private readonly IRoundRepository roundRepository;
+        private readonly ActiveRoundCache activeRoundCache;
 
         public RoundsGeneratorService(
            IOptions<RoundOptions> roundOptions,
-           IRoundRepository roundRepository)
+           IRoundRepository roundRepository,
+           ActiveRoundCache activeRoundCache)
         {
             this.roundOptions = roundOptions.Value;
             this.roundRepository = roundRepository;
+            this.activeRoundCache = activeRoundCache;
         }
 
         public IEnumerable<Round> GenerateRoundIfNeeded()
         {
-            var idleRoundsCount = roundRepository.GetIdleRoundsCount();
-            var activeRoundsCount = roundRepository.GetActiveRoundsCount();
+            var idleRoundsCount = this.roundRepository.GetIdleRoundsCount();
+            var activeRoundsCount = this.activeRoundCache.Count;
             var activeRounds = new List<Round>();
 
-            if (idleRoundsCount >= this.roundOptions.NewRoundGenerationThreshold && activeRoundsCount > this.roundOptions.MinimunActiveRounds)
+            var activeRoundsMinimumWithSafety = this.roundOptions.MinimunActiveRounds + this.roundOptions.CalculateMinimunActiveRoundsSafetyAddition();
+
+            if (idleRoundsCount >= this.roundOptions.NewRoundGenerationThreshold && activeRoundsCount > activeRoundsMinimumWithSafety)
             {
                 return activeRounds;
             }
 
             if (idleRoundsCount == 0)
             {
-                activeRounds = GenerateRoundsAndReturnActive(activateRoundsCount : this.roundOptions.MinimunActiveRounds).ToList();
+                activeRounds = GenerateRoundsAndReturnActive(activateRoundsCount : activeRoundsMinimumWithSafety).ToList();
                 return activeRounds;
             }
 
@@ -42,7 +47,7 @@ namespace PlayNirvana.RoundModule.Application.Services
 
                 GenerateRoundsAndReturnActive(lastRoundStartTime);
             }
-            else if (activeRoundsCount <= this.roundOptions.MinimunActiveRounds)
+            else if (activeRoundsCount <= activeRoundsMinimumWithSafety)
             {
                 activeRounds.AddRange(ActivateIdleRounds(this.roundOptions.MinimunActiveRounds));
             }
@@ -64,7 +69,7 @@ namespace PlayNirvana.RoundModule.Application.Services
             this.roundRepository.Commit();
         }
 
-        public bool IsFirstRoundForProcessStartInFuture()
+        public bool IsFirstRoundForProcessStartInPast()
         {
             var nextRoundStart = this.roundRepository.ActiveAnInProgressRoundQuery().Select(x => x.Start).FirstOrDefault();
 

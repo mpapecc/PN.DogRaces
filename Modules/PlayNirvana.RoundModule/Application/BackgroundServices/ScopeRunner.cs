@@ -19,6 +19,14 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
             action(service1);
         }
 
+        public TREsult Run<S1, TREsult>(Func<S1, TREsult> func)
+            where S1 : notnull
+        {
+            using var scope = serviceScopeFactory.CreateScope();
+            var service1 = scope.ServiceProvider.GetRequiredService<S1>();
+            return func(service1);
+        }
+
         public void Run<S1, S2>(Action<S1, S2> action)
             where S1 : notnull 
             where S2 : notnull

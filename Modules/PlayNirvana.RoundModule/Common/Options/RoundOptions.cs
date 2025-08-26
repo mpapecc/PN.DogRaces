@@ -14,5 +14,13 @@
         {
             return RoundDurationInSeconds - (RaceDurationInSeconds + RoundLockBeforeRaceStart);
         }
+
+        public int CalculateMinimunActiveRoundsSafetyAddition()
+        {
+            int generationSec = (int)TimeSpan.FromMinutes(RoundsGeneratorIntervalInMinutes).TotalSeconds;
+            var roundsCountProcessedBetweenRoundsGenerations = (generationSec + RoundDurationInSeconds - 1) / RoundDurationInSeconds;;
+
+            return roundsCountProcessedBetweenRoundsGenerations;
+        }
     }
 }

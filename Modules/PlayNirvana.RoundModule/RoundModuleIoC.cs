@@ -81,23 +81,21 @@ namespace PlayNirvana.RoundModule
                     .BindConfiguration(nameof(RoundOptions))
                     .Validate(roundOptions =>
                     {
-                        bool IsRoundDurationGreaterThenSegmentsDuration()
+                        bool IsRoundDurationGreaterThenRoundSegmentsDuration()
                         {
                             var requiredDuration = roundOptions.RaceDurationInSeconds + roundOptions.RoundLockBeforeRaceStart + roundOptions.MinimumRoundDurationBeforeLockInSeconds;
                             return roundOptions.RoundDurationInSeconds > requiredDuration;
                         }
 
-                        return IsRoundDurationGreaterThenSegmentsDuration();
+                        return IsRoundDurationGreaterThenRoundSegmentsDuration();
 
                     }, "Total round segments duration is greater then round duration or Duration. Change values in appsettings.json file")
                     .Validate(roundOptions =>
                     {
-                        bool IsRoundDurationValid()
-                        {
-                            return 3600 % roundOptions.RoundDurationInSeconds == 0;
-                        }
+                        var isRoundDurationValid = 3600 % roundOptions.RoundDurationInSeconds == 0;
 
-                        return IsRoundDurationValid();
+                        return isRoundDurationValid;
+
                     }, "Round duration is not valid, should be set to satisfy 3600 % x == 0. Change values in appsettings.json file")
                     .ValidateOnStart();
 
