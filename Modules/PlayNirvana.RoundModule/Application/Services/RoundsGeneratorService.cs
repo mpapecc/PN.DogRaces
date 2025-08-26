@@ -73,7 +73,7 @@ namespace PlayNirvana.RoundModule.Application.Services
 
         private IEnumerable<Round> GenerateRoundsAndReturnActive(DateTime? referentDateTime = null, int activateRoundsCount = 0)
         {
-            //we should check what are product requirements. time span of two minutes is selected by looking into existing solutions on web
+            //we should check what are product requirements.based on existing solution on web two minutes is good choice for round duration
             //also duration of 2 minutes or any other number which adds up to full hour (lets say 1, 1.5, 3, 4, 5, 6) whould be good choice
             //since it we would not have round start translation within every next hour and we could easily suport such configuration via appsettings or some env variable
             //for calcualtion next round start at the generation of rounds
