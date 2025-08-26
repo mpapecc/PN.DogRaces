@@ -71,8 +71,8 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
 
         private void ProcessLockedRoundsBetsIfNeeded()
         {
-            this.scopeRunner.Run<IRoundRepository, ITicketModuleIntegration, IRoundModuleRepository<RaceDogResult>, RoundOutcomeService>(
-                (roundRepository, ticketModuleIntegration, raceDogResultRepository, roundOutcomeService) =>
+            this.scopeRunner.Run<IRoundRepository, ITicketModuleIntegration, IRoundModuleRepository<RaceDogResult>, RoundOutcomeService, RoundService>(
+                (roundRepository, ticketModuleIntegration, raceDogResultRepository, roundOutcomeService, roundService) =>
             {
                 var lockedRoundsIds = roundRepository.LockedRoundQuery().Select(x => x.Id).ToList();
 
@@ -89,6 +89,7 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
                     }
 
                     ticketModuleIntegration.ProcessRoundBets(roundId);
+                    roundService.FinishRound(roundId);
                 });
             });
         }
