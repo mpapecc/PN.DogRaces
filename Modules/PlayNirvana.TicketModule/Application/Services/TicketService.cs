@@ -86,6 +86,7 @@ namespace PlayNirvana.TicketModule.Application.Services
             //for multi user scenarion with proper payment service we can also move this processing to db
             wonTicketsPaymentReservationsIds.ForEach(x => this.paymentModuleIntegration.ProcessReservation(x, isWinningTicket: true));
         }
+
         public void UpdateSuccessTicketsToLost(int roundId, int batchSize)
         {
             var lostTicketsInCurrentRoundQuery = ticketRepository.Query()
@@ -102,6 +103,15 @@ namespace PlayNirvana.TicketModule.Application.Services
 
             //same comment as above
             lostTicketsPaymentReservationsIds.ForEach(x => this.paymentModuleIntegration.ProcessReservation(x, isWinningTicket: false));
+        }
+
+        public TicketStatus CheckTicketStatus(int ticketId)
+        {
+            var ticket = this.ticketRepository.Query().Where(x => x.Id == ticketId)
+                .Select(x => new { x.TicketStatus , x.BetAmount})
+                .FirstOrDefault();
+
+            return ticket == null ? throw new InvalidDataException($"Ticket wih {ticketId} does not exists") : ticket.TicketStatus;
         }
     }
 }
