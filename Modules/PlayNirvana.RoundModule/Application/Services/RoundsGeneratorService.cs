@@ -43,7 +43,7 @@ namespace PlayNirvana.RoundModule.Application.Services
 
             if (idleRoundsCount > 0 && idleRoundsCount < this.roundOptions.NewRoundGenerationThreshold)
             {
-                var lastRoundStartTime = roundRepository.GetLastIdleRoundStart();
+                var lastRoundStartTime = roundRepository.GetLastRoundStart();
 
                 GenerateRoundsAndReturnActive(lastRoundStartTime);
             }

@@ -20,9 +20,9 @@ namespace PlayNirvana.RoundModule.Infrastructure.DataContext
             return ActiveRoundQuery().Count();
         }
 
-        public DateTime GetLastIdleRoundStart()
+        public DateTime GetLastRoundStart()
         {
-            return IdleRoundQuery()
+            return base.Query()
                 .OrderByDescending(x => x.Start)
                 .Select(x => x.Start)
                 .FirstOrDefault();
