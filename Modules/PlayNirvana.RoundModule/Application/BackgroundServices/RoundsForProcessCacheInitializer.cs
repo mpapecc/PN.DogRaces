@@ -1,18 +1,17 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PlayNirvana.RoundModule.Application.Services;
 
 namespace PlayNirvana.RoundModule.Application.BackgroundServices
 {
-    public class ActiveRoundCacheInitializer : BackgroundService
+    public class RoundsForProcessCacheInitializer : BackgroundService
     {
-        private readonly ILogger<ActiveRoundCacheInitializer> logger;
+        private readonly ILogger<RoundsForProcessCacheInitializer> logger;
         private readonly ActiveRoundCache activeRoundCache;
         private readonly ScopeRunner scopeRunner;
 
-        public ActiveRoundCacheInitializer(
-            ILogger<ActiveRoundCacheInitializer> logger,
+        public RoundsForProcessCacheInitializer(
+            ILogger<RoundsForProcessCacheInitializer> logger,
             ActiveRoundCache activeRoundCache,
             ScopeRunner scopeRunner)
         {
@@ -25,16 +24,16 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
         {
             this.scopeRunner.Run<RoundService>(roundService =>
             {
-                this.logger.LogInformation("{service} started", nameof(ActiveRoundCacheInitializer));
+                this.logger.LogInformation("{service} started", nameof(RoundsForProcessCacheInitializer));
 
-                var activeRounds = roundService.GetActiveAnInProgressRoundDtos();
+                var activeRounds = roundService.GetRoundsForProcessDtos();
 
                 foreach (var round in activeRounds)
                 {
                     activeRoundCache.Enqueue(round);
                 }
 
-                this.logger.LogInformation("{service} finshed starting", nameof(ActiveRoundCacheInitializer));
+                this.logger.LogInformation("{service} finshed starting", nameof(RoundsForProcessCacheInitializer));
             });
 
             return base.StartAsync(cancellationToken);

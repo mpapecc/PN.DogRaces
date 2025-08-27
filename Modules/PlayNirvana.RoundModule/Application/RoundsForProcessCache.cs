@@ -2,7 +2,7 @@
 
 namespace PlayNirvana.RoundModule.Application
 {
-    public class ActiveRoundCache : Queue<RoundDto>
+    public class RoundsForProcessCache : Queue<RoundDto>
     {
         public IEnumerable<int> GetRoundIdList()
         {
