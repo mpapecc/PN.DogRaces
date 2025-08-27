@@ -1,0 +1,34 @@
+services:
+  playnirvana:
+    build:
+      context: .
+    depends_on:
+      sqlserver:
+        condition: service_started
+    container_name: playnirvana
+    environment:
+      - ConnectionStrings__PlayNirvanaConnectionString=Server=sqlserver;Database=PlayNirvana;User Id=sa;Password=Welcome$2u;Encrypt=False
+      - ASPNETCORE_ENVIRONMENT=Development
+    command: >
+      bash -c "echo 'Running migrations...' &&
+             dotnet ef database update --context TicketModuleDbContext --project Modules/PlayNirvana.TicketModule/PlayNirvana.TicketModule.csproj --startup-project PlayNirvana.Web/PlayNirvana.Web.csproj &&
+             dotnet ef database update --context RoundModuleDbContext --project Modules/PlayNirvana.RoundModule/PlayNirvana.RoundModule.csproj --startup-project PlayNirvana.Web/PlayNirvana.Web.csproj &&
+             echo 'Migrations complete. Starting application...' &&
+             cd PlayNirvana.Web &&
+             dotnet /publish/PlayNirvana.Web.dll"
+    ports:
+      - 8080:8080
+    
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Welcome$2u"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserverdata:/var/opt/mssql
+
+volumes:
+  sqlserverdata:
