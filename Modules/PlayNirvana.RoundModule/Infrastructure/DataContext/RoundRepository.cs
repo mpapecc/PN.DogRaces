@@ -10,16 +10,6 @@ namespace PlayNirvana.RoundModule.Infrastructure.DataContext
         {
         }
 
-        public int GetIdleRoundsCount()
-        {
-            return IdleRoundQuery().Count();
-        }
-
-        public int GetActiveRoundsCount()
-        {
-            return ActiveRoundQuery().Count();
-        }
-
         public DateTime GetLastRoundStart()
         {
             return base.Query()
@@ -28,29 +18,14 @@ namespace PlayNirvana.RoundModule.Infrastructure.DataContext
                 .FirstOrDefault();
         }
 
-        public IQueryable<Round> IdleRoundQuery()
-        {
-            return base.Query().Where(x => x.RoundStatus == RoundStatus.Idle);
-        }
-
-        public IQueryable<Round> ActiveRoundQuery()
-        {
-            return base.Query().Where(x => x.RoundStatus == RoundStatus.Active);
-        }
-
         public IQueryable<Round> LockedRoundQuery()
         {
             return base.Query().Where(x => x.RoundStatus == RoundStatus.Locked);
         }
 
-        public IQueryable<Round> ActiveAnInProgressRoundQuery()
+        public IQueryable<Round> RoundsForProcessQuery()
         {
-            return base.Query().Where(x => x.RoundStatus == RoundStatus.Active || x.RoundStatus == RoundStatus.InProgress);
-        }
-
-        public IQueryable<Round> NonProcessedQuery()
-        {
-            return base.Query().Where(x => x.RoundStatus == RoundStatus.Active || x.RoundStatus == RoundStatus.Idle || x.RoundStatus == RoundStatus.InProgress);
+            return base.Query().Where(x => x.RoundStatus == RoundStatus.Active ||  x.RoundStatus == RoundStatus.InProgress);
         }
     }
 }
