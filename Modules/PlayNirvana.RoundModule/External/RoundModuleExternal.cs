@@ -1,14 +1,13 @@
 ﻿using PlayNirvana.CommonModule.Interfaces;
 using PlayNirvana.RoundModule.Application;
-using PlayNirvana.RoundModule.Application.Repositories;
 
 namespace PlayNirvana.RoundModule.External
 {
     public class RoundModuleExternal : IRoundModuleExternal
     {
-        private readonly ActiveRoundCache activeRoundCache;
+        private readonly RoundsForProcessCache activeRoundCache;
 
-        public RoundModuleExternal(ActiveRoundCache activeRoundCache)
+        public RoundModuleExternal(RoundsForProcessCache activeRoundCache)
         {
             this.activeRoundCache = activeRoundCache;
         }

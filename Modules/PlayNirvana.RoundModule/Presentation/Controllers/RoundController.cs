@@ -10,11 +10,11 @@ namespace PlayNirvana.RoundModule.Presentation.Controllers
     public class RoundController : Controller
     {
         private readonly RoundService roundService;
-        private readonly ActiveRoundCache activeRoundCache;
+        private readonly RoundsForProcessCache activeRoundCache;
 
         public RoundController(
             RoundService roundService,
-            ActiveRoundCache activeRoundCache)
+            RoundsForProcessCache activeRoundCache)
         {
             this.roundService = roundService;
             this.activeRoundCache = activeRoundCache;

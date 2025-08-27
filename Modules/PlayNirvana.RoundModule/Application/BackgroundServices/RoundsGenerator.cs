@@ -11,13 +11,13 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
     public class RoundsGenerator : BackgroundService
     {
         private readonly ILogger<RoundsGenerator> logger;
-        private readonly ActiveRoundCache actieRoundCache;
+        private readonly RoundsForProcessCache actieRoundCache;
         private readonly ScopeRunner scopeRunner;
         private readonly RoundOptions roundOptions;
 
         public RoundsGenerator(
             ILogger<RoundsGenerator> logger,
-            ActiveRoundCache actieRoundCache,
+            RoundsForProcessCache actieRoundCache,
             IOptions<RoundOptions> roundOptions,
             ScopeRunner scopeRunner)
         {

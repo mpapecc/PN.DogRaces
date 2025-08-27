@@ -38,15 +38,9 @@ namespace PlayNirvana.RoundModule.Application.Services
                 .ExecuteUpdate(s => s.SetProperty(x => x.RoundStatus, RoundStatus.Finished));
         }
 
-        public IEnumerable<RoundDto> GetActiveRoundDtos()
+        public IEnumerable<RoundDto> GetRoundsForProcessDtos()
         {
-            return roundRepository.ActiveRoundQuery()
-                .Select(x => new RoundDto(x.Id, x.Start)).ToList();
-        }
-
-        public IEnumerable<RoundDto> GetActiveAnInProgressRoundDtos()
-        {
-            return roundRepository.ActiveAnInProgressRoundQuery()
+            return roundRepository.RoundsForProcessQuery()
                 .OrderBy(x => x.Start)
                 .Select(x => new RoundDto(x.Id, x.Start)).ToList();
         }

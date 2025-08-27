@@ -16,13 +16,13 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
     {
         private readonly RoundOptions roundOptions;
         private readonly ILogger<RoundManager> logger;
-        private readonly ActiveRoundCache activeRoundCache;
+        private readonly RoundsForProcessCache activeRoundCache;
         private readonly ScopeRunner scopeRunner;
 
         public RoundManager(
             IOptions<RoundOptions> roundOptions,
             ILogger<RoundManager> logger,
-            ActiveRoundCache activeRoundCache,
+            RoundsForProcessCache activeRoundCache,
             ScopeRunner scopeRunner)
         {
             this.roundOptions = roundOptions.Value;

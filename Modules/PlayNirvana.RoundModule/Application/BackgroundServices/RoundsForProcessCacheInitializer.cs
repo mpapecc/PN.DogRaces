@@ -7,12 +7,12 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
     public class RoundsForProcessCacheInitializer : BackgroundService
     {
         private readonly ILogger<RoundsForProcessCacheInitializer> logger;
-        private readonly ActiveRoundCache activeRoundCache;
+        private readonly RoundsForProcessCache activeRoundCache;
         private readonly ScopeRunner scopeRunner;
 
         public RoundsForProcessCacheInitializer(
             ILogger<RoundsForProcessCacheInitializer> logger,
-            ActiveRoundCache activeRoundCache,
+            RoundsForProcessCache activeRoundCache,
             ScopeRunner scopeRunner)
         {
             this.logger = logger;

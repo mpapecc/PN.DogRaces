@@ -50,7 +50,7 @@ namespace PlayNirvana.RoundModule
 
         private static IServiceCollection RegisterServices(this IServiceCollection services)
         {
-            services.AddSingleton<ActiveRoundCache>();
+            services.AddSingleton<RoundsForProcessCache>();
             services.AddSingleton<ScopeRunner>();
 
             services.AddScoped<RoundService>();
@@ -69,7 +69,7 @@ namespace PlayNirvana.RoundModule
             });
 
             services.AddHostedService<RoundsGenerator>();
-            services.AddHostedService<ActiveRoundCacheInitializer>();
+            services.AddHostedService<RoundsForProcessCacheInitializer>();
             services.AddHostedService<RoundManager>();
 
             return services;

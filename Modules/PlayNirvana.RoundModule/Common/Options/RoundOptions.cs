@@ -3,7 +3,6 @@
     public class RoundOptions
     {
         public int MinimunActiveRounds { get; set; }
-        public int NewRoundGenerationThreshold { get; set; }
         public int RoundsGeneratorIntervalInMinutes { get; set; }
         public int RoundDurationInSeconds { get; set; }
         public int RoundLockBeforeRaceStart { get; set; }
