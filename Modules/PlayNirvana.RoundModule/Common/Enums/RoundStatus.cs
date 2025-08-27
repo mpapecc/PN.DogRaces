@@ -2,10 +2,9 @@
 {
     public enum RoundStatus
     {
-        Idle = 0,
-        Active = 1,
-        InProgress = 2,
-        Locked = 3,
-        Finished = 4
+        Active = 0,
+        InProgress = 1,
+        Locked = 2,
+        Finished = 3
     }
 }
