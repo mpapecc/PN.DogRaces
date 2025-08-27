@@ -35,7 +35,16 @@ Update-Database -context RoundModuleDbContext
 Add-Migrations <mig-name> -context TicketModuleDbContext -o Infrastructure\DataContext\Migrations -p PlayNirvana.TicketModule
 Update-Database -context TicketModuleDbContext
 
-## Output
+## Running Application
+Start it from VS.
+
+# Docker
+
+In root of project run :
+
+docker compose -f docker.compose.yaml -d and acess Swagger on port 8080
+
+# Output
 Round and bets processing can be seen in terminal that opens when runnig project in VS 
 (not working with others IDE but I guess they all have some sort of debug terminal) or by querying database.
 Currently there is not UI for this app but maybe in future I will make implementation for it.
