@@ -11,11 +11,10 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
     command: >
       bash -c "echo 'Running migrations...' &&
-             dotnet ef database update --context TicketModuleDbContext --project Modules/PlayNirvana.TicketModule/PlayNirvana.TicketModule.csproj --startup-project PlayNirvana.Web/PlayNirvana.Web.csproj &&
-             dotnet ef database update --context RoundModuleDbContext --project Modules/PlayNirvana.RoundModule/PlayNirvana.RoundModule.csproj --startup-project PlayNirvana.Web/PlayNirvana.Web.csproj &&
+             ./ticketModuleMigrations.exe &&
+             ./roundModuleMigrations.exe
              echo 'Migrations complete. Starting application...' &&
-             cd PlayNirvana.Web &&
-             dotnet /publish/PlayNirvana.Web.dll"
+             dotnet PlayNirvana.Web.dll"
     ports:
       - 8080:8080
     
