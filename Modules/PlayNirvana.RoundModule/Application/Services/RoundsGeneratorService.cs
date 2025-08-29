@@ -39,7 +39,16 @@ namespace PlayNirvana.RoundModule.Application.Services
 
                 if(referentDate < DateTime.UtcNow)
                 {
-                    referentDate = DateTime.UtcNow; 
+                    //we should check what are product requirements.based on existing solution on web two minutes is good choice for round duration
+                    //also duration of 2 minutes or any other number which adds up to full hour (lets say 1, 1.5, 3, 4, 5, 6) whould be good choice
+                    //since it we would not have round start translation within every next hour and we could easily suport such configuration via appsettings or some env variable
+                    //for calcualtion next round start at the generation of rounds
+
+                    referentDate = RoundTimeSlotGenerator.NextAlignedSlotUtc(this.roundOptions.RoundDurationInSeconds);
+                }
+                else
+                {
+                    referentDate = RoundTimeSlotGenerator.NextAlignedSlotUtc(this.roundOptions.RoundDurationInSeconds, referentDate);
                 }
 
                 return GenerateRoundsAndReturnActive(activeRoundsMinimumWithSafety, referentDate);
@@ -62,23 +71,20 @@ namespace PlayNirvana.RoundModule.Application.Services
 
         public bool IsFirstRoundForProcessStartInPast()
         {
-            var nextRoundStart = this.roundRepository.RoundsForProcessQuery().Select(x => x.Start).FirstOrDefault();
+            var nextRoundStart = this.roundRepository.RoundsForProcessQuery()
+                .OrderBy(x => x.Start)
+                .Select(x => x.Start)
+                .FirstOrDefault();
 
             return nextRoundStart < DateTime.UtcNow;
         }
 
-        private IEnumerable<Round> GenerateRoundsAndReturnActive(int activeRoundsMinimumWithSafety, DateTime? referentDateTime = null)
+        private IEnumerable<Round> GenerateRoundsAndReturnActive(int activeRoundsMinimumWithSafety, DateTime referentDateTime)
         {
-            //we should check what are product requirements.based on existing solution on web two minutes is good choice for round duration
-            //also duration of 2 minutes or any other number which adds up to full hour (lets say 1, 1.5, 3, 4, 5, 6) whould be good choice
-            //since it we would not have round start translation within every next hour and we could easily suport such configuration via appsettings or some env variable
-            //for calcualtion next round start at the generation of rounds
-            referentDateTime = RoundTimeSlotGenerator.NextAlignedSlotUtc(this.roundOptions.RoundDurationInSeconds);
-
             var rounds = Enumerable.Range(0, activeRoundsMinimumWithSafety)
                 .Select((x, i) => new Round()
                 {
-                    Start = referentDateTime.Value.AddSeconds(x * this.roundOptions.RoundDurationInSeconds),
+                    Start = referentDateTime.AddSeconds(x * this.roundOptions.RoundDurationInSeconds),
                     RoundStatus = RoundStatus.Active
                 }).ToList();
 
