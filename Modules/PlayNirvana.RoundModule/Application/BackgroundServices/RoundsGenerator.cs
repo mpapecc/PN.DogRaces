@@ -29,6 +29,14 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
 
         protected override Task ExecuteAsync(CancellationToken ct)
         {
+            this.scopeRunner.Run<RoundsGeneratorService>(roundGeneratorService =>
+            {
+                if (roundGeneratorService.IsFirstRoundForProcessStartInPast())
+                {
+                    roundGeneratorService.TranslateNonProcessedRoundsStartInFuture();
+                }
+            });
+
             GenerateRoundsJob();
 
             System.Timers.Timer timer = new System.Timers.Timer(TimeSpan.FromMinutes(this.roundOptions.RoundsGeneratorIntervalInMinutes));
@@ -49,11 +57,6 @@ namespace PlayNirvana.RoundModule.Application.BackgroundServices
         {
             return this.scopeRunner.Run<RoundsGeneratorService, IEnumerable<Round>>(roundGeneratorService =>
             {
-                if (roundGeneratorService.IsFirstRoundForProcessStartInPast())
-                {
-                    roundGeneratorService.TranslateNonProcessedRoundsStartInFuture();
-                }
-
                 return roundGeneratorService.GenerateRoundIfNeeded();
             });
         }
