@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PlayNirvana.CommonModule.Services;
+using PlayNirvana.CommonModule.Extensions;
 using PlayNirvana.TicketModule.Application.Models;
 using PlayNirvana.TicketModule.Application.Repositories;
 using PlayNirvana.TicketModule.Application.Validators;
@@ -77,7 +78,7 @@ namespace PlayNirvana.TicketModule.Application.Services
             this.executeUpdateOrDeleteBatcher.ExecuteUpdateOrDeleteInBatch(
                 batchSize,
                 wonTicketsInCurrentRoundQuery,
-                t => t.ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Won))
+                t => t.ExecuteUpdateWithChangeTracking(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Won))
                 );
 
             var wonTicketsPaymentReservationsIds = wonTicketsInCurrentRoundQuery.Select(x => x.PaymentReservationId).ToList();
@@ -96,7 +97,7 @@ namespace PlayNirvana.TicketModule.Application.Services
             this.executeUpdateOrDeleteBatcher.ExecuteUpdateOrDeleteInBatch(
                 batchSize,
                 lostTicketsInCurrentRoundQuery,
-                t => t.ExecuteUpdate(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Lost))
+                t => t.ExecuteUpdateWithChangeTracking(set => set.SetProperty(x => x.TicketStatus, TicketStatus.Lost))
                 );
 
             var lostTicketsPaymentReservationsIds = lostTicketsInCurrentRoundQuery.Select(x => x.PaymentReservationId).ToList();

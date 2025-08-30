@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using PlayNirvana.CommonModule.Services;
+﻿using PlayNirvana.CommonModule.Services;
+using PlayNirvana.CommonModule.Extensions;
 using PlayNirvana.CommonModule.SharedEntites;
 using PlayNirvana.TicketModule.Application.Repositories;
 using PlayNirvana.TicketModule.Common.Enums;
@@ -45,7 +45,7 @@ namespace PlayNirvana.TicketModule.Application.Services
         {
             int ProcessPositionBetTypeOnDb(IQueryable<Bet> query)
             {
-                return query.ExecuteUpdate(x => x.SetProperty(x => x.BetStatus, b =>
+                return query.ExecuteUpdateWithChangeTracking(x => x.SetProperty(x => x.BetStatus, b =>
                     dogPositionRepository.Query().Any(dp => dp.BetId == b.Id)
                     &&
                     !dogPositionRepository.Query()
@@ -75,7 +75,7 @@ namespace PlayNirvana.TicketModule.Application.Services
         {
             int ProcessRangenBetTypeOnDb(IQueryable<Bet> query)
             {
-                return query.ExecuteUpdate(x => x.SetProperty(x => x.BetStatus, b =>
+                return query.ExecuteUpdateWithChangeTracking(x => x.SetProperty(x => x.BetStatus, b =>
                     dogPositionRepository.Query().Any(dp => dp.BetId == b.Id)
                     &&
                     dogPositionRepository.Query()
