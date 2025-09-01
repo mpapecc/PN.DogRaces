@@ -22,10 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Modules\PlayNirvana.PaymentModule\PlayNirvana.PaymentModule.csproj" />
-    <ProjectReference Include="..\..\Modules\PlayNirvana.RoundModule\PlayNirvana.RoundModule.csproj" />
-    <ProjectReference Include="..\..\Modules\PlayNirvana.TicketModule\PlayNirvana.TicketModule.csproj" />
-    <ProjectReference Include="..\..\Modules\PlayNirvana.Web\PlayNirvana.Web.csproj" />
+    <ProjectReference Include="..\..\Src\PlayNirvana.PaymentModule\PlayNirvana.PaymentModule.csproj" />
+    <ProjectReference Include="..\..\Src\PlayNirvana.RoundModule\PlayNirvana.RoundModule.csproj" />
+    <ProjectReference Include="..\..\Src\PlayNirvana.TicketModule\PlayNirvana.TicketModule.csproj" />
+    <ProjectReference Include="..\..\Src\PlayNirvana.Web\PlayNirvana.Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>

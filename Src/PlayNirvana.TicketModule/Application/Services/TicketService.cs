@@ -33,7 +33,7 @@ namespace PlayNirvana.TicketModule.Application.Services
             this.executeUpdateOrDeleteBatcher = executeUpdateOrDeleteBatcher;
         }
 
-        public void ValidateAndCreateTicket(CreateTicketCommand creatTicketCommand)
+        public int ValidateAndCreateTicket(CreateTicketCommand creatTicketCommand)
         {
             var ticket = creatTicketCommand.ToTicket();
 
@@ -55,6 +55,8 @@ namespace PlayNirvana.TicketModule.Application.Services
 
             this.ticketRepository.Insert(ticket);
             this.ticketRepository.Commit();
+
+            return ticket.Id;
         }
 
         private void ValidateTicket(Ticket ticket)

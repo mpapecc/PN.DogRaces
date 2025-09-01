@@ -6,6 +6,7 @@ namespace PlayNirvana.TicketModule.Domain.Entites
     public class Bet : BaseChangeTrackingEntity
     {
         public int RoundId { get; set; }
+        public int TicketId { get; set; }
         public BetType BetType { get; set; }
         public BetStatus BetStatus { get; set; } = BetStatus.Pending;
         public IEnumerable<DogPosition> DogPositions { get; set; }
